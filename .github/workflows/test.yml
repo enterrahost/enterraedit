@@ -18,19 +18,39 @@ jobs:
         with:
           node-version: '20'
 
-      # Ubuntu runners ship Chrome at a known path. test.mjs also probes the
-      # usual locations and falls back to the browser puppeteer manages, so
-      # this is belt and braces rather than a requirement.
-      - name: Locate Chrome
-        id: chrome
-        run: |
-          for p in /usr/bin/google-chrome /usr/bin/google-chrome-stable /usr/bin/chromium /usr/bin/chromium-browser; do
-            if [ -x "$p" ]; then echo "path=$p" >> "$GITHUB_OUTPUT"; exit 0; fi
-          done
-          echo "path=" >> "$GITHUB_OUTPUT"
+      # puppeteer-core deliberately never downloads a browser: locally it
+      # borrows the system Chrome. A runner has none, so install one. Ubuntu
+      # images do carry Chrome at a known path, but pinning the download is
+      # more robust than depending on the image contents staying the same.
+      - name: Cache the browser download
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/puppeteer
+          key: puppeteer-chrome-${{ runner.os }}
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+
+      # Puppeteer's own resolver picks a build compatible with the runner,
+      # rather than pinning a version that might not suit the image.
+      - name: Install a browser for the tests
+        run: npx --yes puppeteer browsers install chrome
+
+      - name: Locate the installed browser
+        id: chrome
+        run: |
+          # Match chrome, chrome-headless-shell or a Chrome-for-Testing binary:
+          # the layout differs by platform and puppeteer version.
+          found=$(find "$HOME/.cache/puppeteer" -type f -perm -u+x \
+                    \( -name chrome -o -name 'chrome-headless-shell' \
+                       -o -name 'Google Chrome for Testing' \) 2>/dev/null | head -n1)
+          if [ -z "$found" ]; then
+            for p in /usr/bin/google-chrome /usr/bin/google-chrome-stable /usr/bin/chromium /usr/bin/chromium-browser; do
+              if [ -x "$p" ]; then found="$p"; break; fi
+            done
+          fi
+          echo "Using browser: ${found:-none found}"
+          echo "path=$found" >> "$GITHUB_OUTPUT"
 
       - name: Build
         run: npm run build
