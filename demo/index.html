@@ -39,6 +39,27 @@
  cursor: pointer; }
  .swatch:hover { filter: brightness(1.15); }
  .swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px #2563eb; }
+  /* Button picker. Stacks by default, two columns when there is width. */
+  .picker { display: grid; gap: 1.25rem; grid-template-columns: 1fr; }
+  @media (min-width: 700px) {
+    .picker { grid-template-columns: minmax(0, 1fr) minmax(260px, 1fr); align-items: start; }
+  }
+  .picker-group { margin-block-end: .85rem; }
+  .picker-group h4 { margin: 0 0 .4rem; font-size: .74rem; text-transform: uppercase;
+                     letter-spacing: .05em; color: #71717a; font-weight: 600; }
+  .picker-items { display: flex; flex-wrap: wrap; gap: .35rem; }
+  .picker-item { display: inline-flex; align-items: center; gap: .35rem; font-size: .8rem;
+                 border: 1px solid #d4d4d8; border-radius: 99px; padding: .25rem .65rem;
+                 cursor: pointer; user-select: none; white-space: nowrap; }
+  .picker-item:hover { background: #f4f4f5; }
+  .picker-item input { margin: 0; flex: 0 0 auto; }
+  .picker-item.on { border-color: #345332; background: #f0f4ef; }
+  .picker-out label { display: block; font-size: .8rem; color: #52525b; margin-block-end: .3rem; }
+  .picker-out textarea { font-family: ui-monospace, Menlo, monospace; font-size: .74rem;
+                         width: 100%; padding: .5rem; border: 1px solid #d4d4d8;
+                         border-radius: 4px; resize: vertical; line-height: 1.5;
+                         overflow: hidden; min-height: 54px; box-sizing: border-box; }
+  .picker-out { position: sticky; top: 1rem; }
 </style>
 </head>
 <body>
@@ -292,6 +313,30 @@ Second paragraph.</textarea>
     </textarea>
   </fieldset>
 
+  <fieldset>
+    <legend>13. Button picker: build your own toolbar</legend>
+    <p class="note" style="margin-block-start:0">
+      Every button the editor has. Tick what you need and copy the resulting
+      attribute. Nothing is implied about what the field accepts, only which
+      controls are shown.
+    </p>
+
+    <div class="picker" id="picker">
+      <div class="picker-groups" id="picker-groups"></div>
+      <div class="picker-out">
+        <label for="picker-code">Your configuration</label>
+        <textarea id="picker-code" rows="2" readonly></textarea>
+        <p class="note" id="picker-summary" style="margin-block-end:0"></p>
+      </div>
+    </div>
+
+    <label style="margin-block-start:1rem">Live preview</label>
+    <textarea id="picker-target" name="picker-target" data-enterraedit data-mode="full" rows="3">
+      <p>This toolbar updates as you tick boxes.</p>
+    </textarea>
+  </fieldset>
+
+
  <button type="submit">Submit, dump serialised values</button>
 </form>
 
@@ -344,6 +389,75 @@ Second paragraph.</textarea>
  });
  });
  paint('light', '#345332');
+
+  // ---- button picker ---------------------------------------------------
+  var painted = document.getElementById('picker-target');
+  var pickerEd = EnterraEditBundle.getInstance(painted);
+  var codeBox = document.getElementById('picker-code');
+  var summary = document.getElementById('picker-summary');
+  var groups = EnterraEditBundle.keysByGroup();
+  var labels = EnterraEditBundle.BUTTONS;
+  var groupNames = { inline: 'Inline', block: 'Blocks', insert: 'Insert', history: 'History' };
+
+  // Start from what full mode shows, so the boxes match the preview.
+  var selected = {};
+  EnterraEditBundle.MODES.full.forEach(function (k) { selected[k] = true; });
+
+  function render() {
+    if (!Object.keys(selected).length) selected.bold = true;
+    var keys = Object.keys(labels).filter(function (k) { return selected[k]; });
+    codeBox.value = 'data-toolbar-keys="' + keys.join(',') + '"';
+    // Grow to fit. A long key list is the whole point of the box, and a
+    // clipped attribute cannot be copied. Reset first so scrollHeight is
+    // measured against the content rather than a previously expanded box.
+    codeBox.style.height = 'auto';
+    // +2 for the top and bottom border, which scrollHeight excludes under
+    // box-sizing: border-box.
+    codeBox.style.height = (codeBox.scrollHeight + 2) + 'px';
+    summary.textContent = keys.length + ' of ' + Object.keys(labels).length +
+      ' buttons. Selecting none would leave an unusable field, so one is kept.';
+    // Rebuild so the preview updates immediately, and make the ticked boxes
+    // reflect anything the fallback above just re-added.
+    pickerEd.destroy();
+    painted.setAttribute('data-toolbar-keys', keys.join(','));
+    pickerEd = new EnterraEdit({ element: painted, toolbarKeys: keys });
+    document.querySelectorAll('.picker-item').forEach(function (lab) {
+      var key = lab.getAttribute('data-key');
+      var on = !!selected[key];
+      lab.classList.toggle('on', on);
+      lab.querySelector('input').checked = on;
+    });
+  }
+
+  Object.keys(groups).forEach(function (g) {
+    var wrap = document.createElement('div');
+    wrap.className = 'picker-group';
+    var h = document.createElement('h4');
+    h.textContent = groupNames[g] || g;
+    wrap.appendChild(h);
+    var items = document.createElement('div');
+    items.className = 'picker-items';
+    groups[g].forEach(function (key) {
+      var lab = document.createElement('label');
+      lab.className = 'picker-item' + (selected[key] ? ' on' : '');
+      lab.setAttribute('data-key', key);
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = !!selected[key];
+      cb.addEventListener('change', function () {
+        if (cb.checked) selected[key] = true; else delete selected[key];
+        render();
+      });
+      lab.appendChild(cb);
+      lab.appendChild(document.createTextNode(labels[key].label));
+      items.appendChild(lab);
+    });
+    wrap.appendChild(items);
+    document.getElementById('picker-groups').appendChild(wrap);
+  });
+
+  render();
+
 
  // ---- show what the server actually receives -------------------------
  document.getElementById('show-values').addEventListener('click', function () {

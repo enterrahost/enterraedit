@@ -14,7 +14,7 @@ That is the entire integration. No npm, no bundler, no framework, no GPL, no
 licence key. The `<textarea>` stays in the DOM and stays in sync, so your
 existing form and server code are unchanged.
 
-One file, zero network requests, **147/147** browser tests passing. Around 76 KB
+One file, zero network requests, **156/156** browser tests passing. Around 76 KB
 gzipped at v0.2.0 (quoted with the version, because it will move).
 
 > **No branding in this build.** This is the self-hosted core. It adds nothing
@@ -240,6 +240,48 @@ A mode only controls **which buttons appear**. It does not change what the
 document accepts, so content pasted into a `comment` field is parsed by the same
 schema as a `full` one. To actually restrict input you would narrow the schema,
 which this does not do.
+
+#### Choosing individual buttons
+
+Every button has a key. Pass the ones you want, in any order:
+
+![Button picker](shots/button-picker.png)
+
+```html
+<textarea data-enterraedit
+          data-toolbar-keys="bold,italic,link,bulletList,orderedList"></textarea>
+```
+
+```js
+new EnterraEdit({ element: el, toolbarKeys: ['bold', 'italic', 'link'] });
+```
+
+| Group | Keys |
+| --- | --- |
+| Inline | `bold` `italic` `underline` `strike` `link` `unlink` |
+| Blocks | `heading1` `heading2` `heading3` `paragraph` `bulletList` `orderedList` `blockquote` `codeBlock` `horizontalRule` |
+| Insert | `image` `table` |
+| History | `undo` `redo` |
+
+The map is available at runtime, so a configuration UI can build itself:
+
+```js
+EnterraEdit.ALL_KEYS;      // every key, in toolbar order
+EnterraEdit.BUTTONS;       // { bold: { label, group, icon }, ... }
+EnterraEdit.keysByGroup(); // grouped for a picker
+EnterraEdit.MODES;         // what each named mode includes
+```
+
+A misspelled key is reported rather than silently dropped, because a toolbar
+that quietly lacks the button you asked for is worse than an error:
+
+```
+[EnterraEdit] Unknown toolbar key(s): bolrd.
+Known keys: bold, italic, underline, strike, link, ...
+```
+
+Section 13 of the demo page is a live picker: tick boxes, watch the toolbar
+change, copy the resulting attribute.
 
 ### Images and tables
 
@@ -483,7 +525,7 @@ published to npm yet**, so `npm install enterraedit` will not work.
 ```sh
 npm install
 npm run build     # -> dist/enterraedit.min.js, ~76 KB gzipped
-npm test          # image check + 147/147 assertions in a real browser
+npm test          # image check + 156/156 assertions in a real browser
 ```
 
 To look at it, just open `demo/index.html` in a browser. No server needed: the

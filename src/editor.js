@@ -38,7 +38,7 @@ import { VERSION } from './version.js';
 import { sizeTokens, fontForLang, FONT_STACKS } from './sizing.js';
 import { sanitizeUrl, sanitizeImageSrc } from './url.js';
 import { openDialog } from './dialog.js';
-import { resolveToolbar, MODES } from './modes.js';
+import { resolveToolbar, validateKeys, ALL_KEYS } from './modes.js';
 import {
   tableEditing,
   columnResizing,
@@ -301,6 +301,18 @@ export class EnterraEdit {
       onChange: options.onChange || null,
       name: el.getAttribute('data-name') || el.getAttribute('name') || null
     };
+
+    // A misspelled key used to vanish without a word: the toolbar rendered, it
+    // just lacked the button you asked for. Say so instead.
+    if (this.options.toolbarKeys) {
+      const { unknown } = validateKeys(this.options.toolbarKeys);
+      if (unknown.length) {
+        console.warn(
+          `[EnterraEdit] Unknown toolbar key(s): ${unknown.join(', ')}. ` +
+            `Known keys: ${ALL_KEYS.join(', ')}`
+        );
+      }
+    }
 
     this.strings = this.options.strings;
     this.el = el;
@@ -1190,5 +1202,23 @@ if (typeof window !== 'undefined') {
     const el = typeof target === 'string' ? document.getElementById(target) : target;
     return instances.find((i) => i.el === el) || null;
   };
+
+  // The bundle also exposes a named global, from the esbuild --global-name
+  // flag, and that is what a bundler consumer or the demo page reaches for.
+  // Mirror the helpers onto it once it exists, so the two globals are
+  // interchangeable rather than subtly different.
+  const publish = () => {
+    const B = window.EnterraEditBundle;
+    if (!B || B.getInstance) return;
+    B.EnterraEdit = EnterraEdit;
+    B.initEditors = initEditors;
+    B.instances = instances;
+    B.getInstance = window.EnterraEdit.getInstance;
+  };
+  publish();
+  // The IIFE global is assigned after this module body runs, so try again on
+  // the next tick rather than assuming it is already there.
+  if (typeof setTimeout === 'function') setTimeout(publish, 0);
+
   autoInitWhenReady();
 }
