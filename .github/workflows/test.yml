@@ -59,6 +59,17 @@ jobs:
         run: npm run check:images
 
       - name: Run browser tests
-        run: node test.mjs
+        run: node test.mjs 2>&1 | tee test-output.txt
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.path }}
+
+      # The job log needs admin rights to read through the API, which makes
+      # debugging from a distance needlessly slow. The output is small, so
+      # publish it only when the tests fail.
+      - name: Upload test output on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-output
+          path: test-output.txt
+          retention-days: 7
