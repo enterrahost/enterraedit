@@ -170,6 +170,48 @@ Asserted in the suite against a live browser: a `javascript:` link pasted into
 `setHTML()` comes out as plain text, and a page rendering the stored output
 cannot execute it.
 
+### Content Security Policy
+
+The editor injects its own stylesheet as a `<style>` element. Under a strict
+`style-src` that element is refused, so **the editor renders and works but
+loses every style**: no border, no toolbar background, no button states. It
+looks like a CSS bug rather than a policy block.
+
+Two fixes, both measured against a live CSP.
+
+**Option 1, add the hash.** Tighter, and it is the only relaxation needed. The
+stylesheet is a fixed string so it has one hash:
+
+```
+Content-Security-Policy:
+  default-src 'self';
+  script-src 'self';
+  style-src 'self' 'sha256-08UupLnzS7E6Os/0+KpoveHG3YRCsvqg58Sz+DGRDLE=';
+```
+
+**This hash changes whenever the editor's styles change**, so it must be
+updated when you upgrade. A mismatch silently returns you to an unstyled
+editor, so it is worth a smoke test after any version bump.
+
+**Option 2, allow inline styles.** Simpler, less tight, but immune to upgrades:
+
+```
+style-src 'self' 'unsafe-inline';
+```
+
+Measured behaviour of both, plus the failure mode:
+
+| `style-src` | Result |
+| --- | --- |
+| `'self'` | renders, **completely unstyled** |
+| `'self' 'sha256-...'` | fully styled, including themed tokens |
+| `'self' 'unsafe-inline'` | fully styled |
+
+The editor needs no `script-src` relaxation. It does not use `eval`,
+`new Function` or string timers, and it injects no scripts. It makes no network
+requests, loads no fonts or images of its own and uses no `connect-src`, so
+`default-src 'self'` is otherwise sufficient.
+
 ### Getting the text out
 
 This is the part that decides whether the thing is usable, so it is worth being
