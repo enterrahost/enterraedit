@@ -11,14 +11,7 @@ dist/
 .DS_Store
 *.log
 
-# Test scaffolding written by test.mjs during a run
-_c.html
-_sec.html
-_p.html
-_dlg_probe.html
-_cdn_probe.html
-_form_probe.html
-_probe.html
-
-# npm pack output
-*.tgz
+# Test scaffolding written and removed by test.mjs during a run. Listed as a
+# pattern rather than by name, because a run that fails part way through leaves
+# these behind and they are easy to sweep up with a broad git add.
+_*.html
