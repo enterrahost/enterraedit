@@ -35,7 +35,7 @@ accessibility are correct by construction rather than hand-rolled.
 ```sh
 git clone https://github.com/enterrahost/enterraedit.git
 cd enterraedit
-npm install && npm run build # → dist/enterraedit.min.js
+npm install && npm run build   # -> dist/enterraedit.min.js
 ```
 
 Copy `dist/enterraedit.min.js` into your project and point the script tag at
@@ -437,9 +437,12 @@ published to npm yet**, so `npm install enterraedit` will not work.
 
 ```sh
 npm install
-npm run build # → dist/enterraedit.min.js, ~76 KB gzipped
-npm test # image check + 100/100 assertions in a real browser
+npm run build     # -> dist/enterraedit.min.js, ~76 KB gzipped
+npm test          # image check + 120/120 assertions in a real browser
 ```
+
+To look at it, just open `demo/index.html` in a browser. No server needed: the
+page loads one relative script and nothing else.
 
 `npm test` first verifies that every image referenced in this README actually
 exists. A missing screenshot renders as a broken-icon box on the repository

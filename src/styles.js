@@ -198,6 +198,18 @@ export const STYLES = `
   font-size: var(--ee-font-size);
   inline-size: min(440px, calc(100vw - 2rem));
   box-shadow: 0 12px 32px rgba(0, 0, 0, .18);
+  box-sizing: border-box;
+}
+
+/* The reset above is scoped to .ee-root, and the dialog sits on <body>
+   instead, to be in the top layer. Without this its controls fall back to
+   content-box, so a width:100% input plus its padding overflows the dialog
+   and the right edge no longer lines up with the buttons. */
+.ee-dialog,
+.ee-dialog *,
+.ee-dialog *::before,
+.ee-dialog *::after {
+  box-sizing: border-box;
 }
 
 .ee-dialog::backdrop {
