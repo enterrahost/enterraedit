@@ -27,22 +27,17 @@ accessibility are correct by construction rather than hand-rolled.
 
 ![Light mode](shots/demo-light.png)
 
-## Getting the file
+## Not installable yet
 
-**Not on npm yet.** Until it is, build it yourself:
+There is no release tag, no package, and no hosted build. What exists is the
+editor, its tests and a demo page.
 
-```sh
-git clone https://github.com/enterrahost/enterraedit.git
-cd enterraedit
-npm install && npm run build   # -> dist/enterraedit.min.js
-```
+    npm install && npm run build     # from a checkout
+    open demo/index.html             # to look at it
 
-Copy `dist/enterraedit.min.js` into your project and point the script tag at
-it. It is a single self-contained file: ProseMirror is compiled in, so there
-are no runtime dependencies and no network requests.
+Packaging and a hosted build are the next step. Until they land, this is
+source to read rather than a dependency to add.
 
-A hosted CDN build is also planned, which is what the badge-free note at the
-top refers to.
 
 ## What this is
 
