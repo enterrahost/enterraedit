@@ -37,6 +37,7 @@ import { STYLES } from './styles.js';
 import { VERSION } from './version.js';
 import { sizeTokens, fontForLang, FONT_STACKS } from './sizing.js';
 import { sanitizeUrl, sanitizeImageSrc } from './url.js';
+import { filesFrom, fileToDataUri, isAllowedImage, formatSize } from './images.js';
 import { openDialog } from './dialog.js';
 import { resolveToolbar, validateKeys, ALL_KEYS } from './modes.js';
 import {
@@ -538,6 +539,9 @@ export class EnterraEdit {
     const s = schema;
     const mod = (e) => (e.metaKey || e.ctrlKey);
     return [
+      // Clipboard and drop handling for image files, which arrive as File
+      // objects rather than HTML and would otherwise be discarded silently.
+      this._imagePlugin(),
       history(),
       // Column resizing and cell selection. The plugin is what makes tables
       // behave like tables rather than a grid of paragraphs.
@@ -582,6 +586,83 @@ export class EnterraEdit {
         }
       })
     ];
+  }
+
+  /**
+   * Intercept image files on paste and drop.
+   *
+   * Returns true so ProseMirror stops processing the event: an image file in
+   * the clipboard has no usable HTML alongside it, and letting the default
+   * handler run would insert nothing.
+   */
+  _imagePlugin() {
+    const insert = (files, view) => {
+      const usable = files.filter(isAllowedImage);
+      if (!usable.length) return false;
+
+      // Several files at once paste in order. Each is awaited so a slow read
+      // cannot reorder them relative to one another.
+      (async () => {
+        for (const file of usable) {
+          try {
+            const uri = await fileToDataUri(file);
+            const safe = sanitizeImageSrc(uri);
+            if (!safe) continue;
+            const node = schema.nodes.image.create({
+              src: safe,
+              alt: file.name || null
+            });
+            view.dispatch(view.state.tr.replaceSelectionWith(node));
+            this._notifyImage(file);
+          } catch (e) {
+            console.warn('[EnterraEdit] Could not read pasted image:', e && e.message);
+          }
+        }
+      })();
+
+      return true;
+    };
+
+    return new Plugin({
+      props: {
+        handlePaste: (view, event) => {
+          const files = filesFrom(event.clipboardData);
+          if (!files.length) return false;
+          return insert(files, view);
+        },
+        handleDrop: (view, event) => {
+          const files = filesFrom(event.dataTransfer);
+          if (!files.length) return false;
+          // Put the caret where the file was dropped, so the image lands at the
+          // pointer rather than wherever the selection happened to be.
+          const at = view.posAtCoords({ left: event.clientX, top: event.clientY });
+          if (at) {
+            view.dispatch(view.state.tr.setSelection(
+              view.state.selection.constructor.near(view.state.doc.resolve(at.pos))
+            ));
+          }
+          event.preventDefault();
+          return insert(files, view);
+        }
+      }
+    });
+  }
+
+  /**
+   * Tell the user when an embedded image is large enough to matter.
+   *
+   * Silence would be wrong here: the size lands in the form value, so the
+   * person pasting a 4 MB photograph needs to know before they submit.
+   */
+  _notifyImage(file) {
+    const warning = this._dataUriWarning('data:image/png;base64,' + 'x'.repeat(
+      Math.ceil((file.size * 4) / 3)
+    ));
+    if (!warning) return;
+    console.warn(`[EnterraEdit] Large pasted image (${formatSize(file.size)}): ${warning}`);
+    if (this.status && this.count) {
+      this.count.textContent = `${formatSize(file.size)} image embedded`;
+    }
   }
 
   _buildToolbar() {

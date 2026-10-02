@@ -337,6 +337,22 @@ Second paragraph.</textarea>
   </fieldset>
 
 
+  <fieldset>
+    <legend>14. Paste and drop images</legend>
+    <p class="note" style="margin-block-start:0">
+      Copy a screenshot and paste it here, or drag an image file in. Both are
+      embedded as a data URI, validated the same way as any other source, and
+      warned about if they are large. SVG files are refused, because SVG can
+      carry script.
+    </p>
+
+    <label>Try pasting a screenshot, or dragging an image file</label>
+    <textarea id="paste-target" name="paste-target" data-enterraedit rows="5">
+      <p>Paste or drop an image here.</p>
+    </textarea>
+  </fieldset>
+
+
  <button type="submit">Submit, dump serialised values</button>
 </form>
 

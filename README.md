@@ -14,8 +14,9 @@ That is the entire integration. No npm, no bundler, no framework, no GPL, no
 licence key. The `<textarea>` stays in the DOM and stays in sync, so your
 existing form and server code are unchanged.
 
-One file, zero network requests, **156/156** browser tests passing. Around 76 KB
-gzipped at v0.2.0 (quoted with the version, because it will move).
+One file, zero network requests, **162/162** browser tests passing. Around
+91 KB gzipped at v0.2.0, up from 76 KB before tables were added, which is the
+honest cost of real table support. Quoted with the version, because it moves.
 
 > **No branding in this build.** This is the self-hosted core. It adds nothing
 > to your page: no badge, no backlink, no head comment. If you would rather not
@@ -290,8 +291,12 @@ component.
 
 ![Image dialog](shots/image-dialog.png)
 
-**Images** can be inserted by URL, or by picking a file, which embeds it as a
-data URI. Embedding is convenient for a small screenshot and a poor choice for a
+**Images** can be pasted straight in. A screenshot on the clipboard is picked
+up automatically, and dragging an image file onto the editor works the same way.
+Both are embedded as a data URI, and both are validated by the same schema rule
+as everything else, so SVG is refused because it can carry script.
+
+They can also be inserted by URL, or by picking a file through the dialog. Embedding is convenient for a small screenshot and a poor choice for a
 photograph: base64 costs about a third more than the original bytes, and the
 string travels inside the form value, so it lands in the database, any email
 notification, and every request body. **The dialog warns above 200 KB.**
@@ -524,8 +529,8 @@ published to npm yet**, so `npm install enterraedit` will not work.
 
 ```sh
 npm install
-npm run build     # -> dist/enterraedit.min.js, ~76 KB gzipped
-npm test          # image check + 156/156 assertions in a real browser
+npm run build     # -> dist/enterraedit.min.js, ~91 KB gzipped
+npm test          # image check + 162/162 assertions in a real browser
 ```
 
 To look at it, just open `demo/index.html` in a browser. No server needed: the
@@ -547,18 +552,21 @@ guard. Behavioural claims are observed, not inferred.
 
 Things that are missing or rough, roughly in the order they would bite you.
 
-**File upload is not implemented.** An image can be embedded as a data URI or
-referenced by URL, either of which suits a field that is posted with a form. A
-real attachment workflow needs a server endpoint to receive the file, which is
-out of scope for a drop-in editor.
+**File upload is not implemented.** An image can be pasted, dropped, embedded
+as a data URI or referenced by URL, all of which suit a field posted with a
+form. A real attachment workflow needs a server endpoint to receive the file,
+which is out of scope for a drop-in editor.
 
 **No attachment node for non-image files.** Deliberate: restricting file types
 cannot be done from the browser, so offering the control would imply a guarantee
 the editor cannot make.
 
-**Paste is whatever ProseMirror gives us.** Content is validated against the
-schema, so nothing invalid gets in, but there is no explicit "paste as plain
-text" or Word-cleanup pass.
+**No explicit "paste as plain text" shortcut.** Pasting from Word, Google Docs
+or a web page arrives clean anyway, because the schema drops anything it does
+not model: `font` tags, inline styles, `class` attributes and `mso-*`
+properties all disappear, and scripts never arrive at all. What is missing is a
+deliberate way to force plain text when the markup is wanted stripped but the
+structure kept.
 
 **The accessibility work is asserted, not experienced.** Every button has an
 accessible name, the toolbar follows the ARIA pattern, and the tests check all of
