@@ -1253,7 +1253,7 @@ await mp.evaluate(() => {
   const ed = window.EnterraEdit.getInstance(document.getElementById('t'));
   ed._promptTable();
 });
-await new Promise((r) => setTimeout(r, 300));
+await mp.waitForSelector('[name="cols"]', { timeout: 3000 });
 await mp.evaluate(() => {
   const set = (n, v) => {
     const i = document.querySelector(`[name="${n}"]`);
@@ -1276,11 +1276,14 @@ check('table inserted with the requested shape',
   rows === 2 && cells === 6, `${rows} rows, ${cells} cells`);
 check('first row is a header row', /<th/.test(tblOut));
 
-// Out of range is refused
+// Out of range is refused. Wait for the dialog rather than a fixed delay:
+// querying a field that has not rendered yet throws, the value never gets
+// set, and the submit then succeeds with the defaults, which reads as a
+// product failure when it is a test race.
 await mp.evaluate(() => {
   window.EnterraEdit.getInstance(document.getElementById('t'))._promptTable();
 });
-await new Promise((r) => setTimeout(r, 300));
+await mp.waitForSelector('[name="rows"]', { timeout: 3000 });
 await mp.evaluate(() => {
   const set = (n, v) => {
     const i = document.querySelector(`[name="${n}"]`);
