@@ -13,7 +13,7 @@
 import { Schema } from 'prosemirror-model';
 import { schema as basicSchema } from 'prosemirror-schema-basic';
 import { addListNodes } from 'prosemirror-schema-list';
-import { sanitizeUrl } from './url.js';
+import { sanitizeUrl, sanitizeImageSrc } from './url.js';
 
 const nodes = addListNodes(basicSchema.spec.nodes, 'paragraph block*', 'block');
 
@@ -47,6 +47,54 @@ const strikethrough = {
   ],
   toDOM() {
     return ['s', 0];
+  }
+};
+
+/**
+ * An image node that validates its own src, for the same reason the link mark
+ * does. ProseMirror's basic schema accepts any string, so a `javascript:` or
+ * `data:` source loaded through setHTML() or a paste would be stored by
+ * getHTML() and handed to the server.
+ *
+ * Browsers currently block script execution from an image src, so this is less
+ * dangerous than the equivalent link bug, but storing it is still wrong and a
+ * downstream renderer may be less careful than a browser.
+ *
+ * `data:` images are permitted for image types only. That allows pasted
+ * screenshots, which arrive as data URIs, while excluding `image/svg+xml`,
+ * which can carry script.
+ */
+const image = {
+  inline: true,
+  attrs: {
+    src: {},
+    alt: { default: null },
+    title: { default: null }
+  },
+  group: 'inline',
+  draggable: true,
+  parseDOM: [
+    {
+      tag: 'img[src]',
+      getAttrs(dom) {
+        const src = sanitizeImageSrc(dom.getAttribute('src'));
+        if (!src) return false;
+        return {
+          src,
+          alt: dom.getAttribute('alt'),
+          title: dom.getAttribute('title')
+        };
+      }
+    }
+  ],
+  toDOM(node) {
+    const src = sanitizeImageSrc(node.attrs.src);
+    // An unusable source loses the image rather than emitting a broken one.
+    if (!src) return ['span', 0];
+    const attrs = { src };
+    if (node.attrs.alt) attrs.alt = node.attrs.alt;
+    if (node.attrs.title) attrs.title = node.attrs.title;
+    return ['img', attrs];
   }
 };
 
@@ -88,6 +136,7 @@ const link = {
 
 export const schema = new Schema({
   nodes: nodes
+    .update('image', image)
     .update('heading', {
       attrs: { level: { default: 1 }, dir: { default: null } },
       content: 'inline*',

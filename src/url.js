@@ -53,3 +53,21 @@ export function isSafeUrl(input) {
 }
 
 export { SAFE_SCHEMES };
+
+/**
+ * Image sources, which have a different rule from links.
+ *
+ * Same scheme allowlist, plus one addition: `data:` URIs are accepted for
+ * raster image types only. Pasting a screenshot produces a data URI and
+ * rejecting those would break a common workflow, but `data:image/svg+xml` can
+ * carry script and is excluded.
+ */
+const DATA_IMAGE = /^data:image\/(png|jpe?g|gif|webp|avif|bmp);base64,[a-z0-9+/=\s]+$/i;
+
+export function sanitizeImageSrc(input) {
+  if (!input) return null;
+  const raw = String(input).trim();
+  if (!raw) return null;
+  if (DATA_IMAGE.test(raw)) return raw;
+  return sanitizeUrl(raw);
+}
