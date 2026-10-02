@@ -14,9 +14,7 @@ That is the entire integration. No npm, no bundler, no framework, no GPL, no
 licence key. The `<textarea>` stays in the DOM and stays in sync, so your
 existing form and server code are unchanged.
 
-One file, zero network requests, **162/162** browser tests passing. Around
-91 KB gzipped at v0.2.0, up from 76 KB before tables were added, which is the
-honest cost of real table support. Quoted with the version, because it moves.
+One file, zero network requests, 168 browser tests. About 92 KB gzipped.
 
 > **No branding in this build.** This is the self-hosted core. It adds nothing
 > to your page: no badge, no backlink, no head comment. If you would rather not
@@ -296,10 +294,11 @@ up automatically, and dragging an image file onto the editor works the same way.
 Both are embedded as a data URI, and both are validated by the same schema rule
 as everything else, so SVG is refused because it can carry script.
 
-They can also be inserted by URL, or by picking a file through the dialog. Embedding is convenient for a small screenshot and a poor choice for a
-photograph: base64 costs about a third more than the original bytes, and the
-string travels inside the form value, so it lands in the database, any email
-notification, and every request body. **The dialog warns above 200 KB.**
+They can also be inserted by URL, or by picking a file through the dialog.
+Embedding suits a small screenshot and is a poor choice for a photograph:
+base64 costs about a third more than the original bytes, and the string
+travels inside the form value, so it lands in the database, any email
+notification and every request body. The dialog warns above 200 KB.
 
 **Tables** are built on `prosemirror-tables`, so cell selection, column resizing
 and Tab-to-next-cell all work. The first row is emitted as a header row.
@@ -529,8 +528,8 @@ published to npm yet**, so `npm install enterraedit` will not work.
 
 ```sh
 npm install
-npm run build     # -> dist/enterraedit.min.js, ~91 KB gzipped
-npm test          # image check + 162/162 assertions in a real browser
+npm run build     # -> dist/enterraedit.min.js (single file)
+npm test          # image check + 168 assertions in a real browser
 ```
 
 To look at it, just open `demo/index.html` in a browser. No server needed: the
@@ -579,5 +578,3 @@ correctness and usability are not the same claim.
 properties and easy to override, but there is no table saying what each one
 controls, so writing a custom theme currently means reading `styles.js`.
 
-**Around 76 KB gzipped** at v0.2.0. Reasonable for a full document model, not
-small. If size is the deciding factor, Lexical is lighter.

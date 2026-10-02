@@ -42,5 +42,27 @@ if (fs.existsSync(shotsDir)) {
  }
 }
 
+// The test count is quoted in two places and went stale twice. Compare it
+// against the assertions the suite actually defines, so the README cannot
+// claim a number the tests do not produce.
+const testSrc = fs.readFileSync(path.join(root, 'test.mjs'), 'utf8');
+const assertions = (testSrc.match(/^\s*check\(/gm) || []).length;
+const claimed = [...text.matchAll(/(\d{2,4})\s+(?:browser tests|assertions)/g)]
+  .map((m) => Number(m[1]));
+
+for (const n of claimed) {
+  // The static count includes checks inside loops, so allow the documented
+  // figure to be the runtime total rather than the source total.
+  if (n > assertions) {
+    console.error(
+      `STALE    README claims ${n} tests but test.mjs defines only ${assertions} check() calls`
+    );
+    failed = true;
+  }
+}
+
 if (failed) process.exit(1);
-console.log(`README image check passed (${referenced.size} reference(s)).`);
+console.log(
+  `README check passed (${referenced.size} image reference(s), ` +
+    `${claimed.length} test count(s) consistent).`
+);
