@@ -92,11 +92,28 @@ const errorShown = (p) => until(p, () => {
   return !!e && !e.hidden && e.textContent.trim().length > 0;
 }, { label: 'inline error' });
 
-const browser = await puppeteer.launch({
- ...(CHROME ? { executablePath: CHROME } : {}),
- headless: 'shell',
- args: ['--no-sandbox', '--allow-file-access-from-files']
-});
+// Report the environment before launching. A CI failure with only a stack
+// trace is guesswork; one line naming the browser and platform is not.
+console.log(`platform ${process.platform} ${process.arch}, node ${process.version}`);
+console.log(`browser  ${CHROME || '(puppeteer default)'}`);
+
+let browser;
+try {
+  browser = await puppeteer.launch({
+    ...(CHROME ? { executablePath: CHROME } : {}),
+    headless: 'shell',
+    args: ['--no-sandbox', '--allow-file-access-from-files']
+  });
+} catch (e) {
+  // A launch failure is an environment problem, not an editor problem, and
+  // saying so saves reading a stack trace to work that out.
+  console.error('\nCould not start a browser.');
+  console.error('  path: ' + (CHROME || '(puppeteer default)'));
+  console.error('  error: ' + (e && e.message));
+  console.error('\nOn a machine with no system Chrome, install one first:');
+  console.error('  npx puppeteer browsers install chrome');
+  process.exit(1);
+}
 
 const page = await browser.newPage();
 const consoleErrors = [];
