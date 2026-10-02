@@ -14,7 +14,7 @@ That is the entire integration. No npm, no bundler, no framework, no GPL, no
 licence key. The `<textarea>` stays in the DOM and stays in sync, so your
 existing form and server code are unchanged.
 
-One file, zero network requests, **100/100** browser tests passing. Around 76 KB
+One file, zero network requests, **120/120** browser tests passing. Around 76 KB
 gzipped at v0.2.0 (quoted with the version, because it will move).
 
 > **No branding in this build.** This is the self-hosted core. It adds nothing
@@ -211,6 +211,27 @@ The editor needs no `script-src` relaxation. It does not use `eval`,
 `new Function` or string timers, and it injects no scripts. It makes no network
 requests, loads no fonts or images of its own and uses no `connect-src`, so
 `default-src 'self'` is otherwise sufficient.
+
+### Dialogs
+
+The link editor is a native `<dialog>` opened with `showModal()`, which is what
+keeps it dependency-free. The browser supplies the focus trap, Escape handling,
+focus restoration and the backdrop, all of which are the parts modals usually
+get wrong when written by hand.
+
+![Link dialog](shots/link-dialog.png)
+
+- Inline validation. An unsafe address shows a message and keeps the dialog
+  open, rather than an `alert()` that cannot be styled or read properly.
+- Prefilled when the caret or selection is already inside a link.
+- Remove link appears only when there is a link to remove.
+- Labelled and described for screen readers, with the error marked `role="alert"`.
+- Follows the active theme, including custom accents, and mirrors correctly in
+  RTL. The dialog sits outside `.ee-root`, so the theme tokens and text
+  direction are copied onto it explicitly.
+
+The component is generic: `openDialog({ title, fields, onSubmit })` returns the
+field values or a cancellation. Image and media insertion would reuse it.
 
 ### Getting the text out
 
@@ -436,10 +457,10 @@ guard. Behavioural claims are observed, not inferred.
 
 Things that are missing or rough, roughly in the order they would bite you.
 
-**The link dialog is `window.prompt`.** It works, but it cannot be styled, has no
-focus trap, and is the weakest remaining piece of the accessibility story. Media
-and image insertion are not implemented at all. The editor handles text,
-structure and links, and stops there.
+**Media and image insertion are not implemented.** The editor handles text,
+structure and links, and stops there. The dialog component underneath the link
+prompt is generic, so adding them is a matter of describing fields rather than
+building another modal.
 
 **Paste is whatever ProseMirror gives us.** Content is validated against the
 schema, so nothing invalid gets in, but there is no explicit "paste as plain

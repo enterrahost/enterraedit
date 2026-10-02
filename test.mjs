@@ -838,70 +838,175 @@ check('fade returns when scrolled back',
 await page.setViewport({ width: 900, height: 1200, deviceScaleFactor: 2 });
 await new Promise((r) => setTimeout(r, 250));
 
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 13n. link dialog ----------
+ * Replaces window.prompt, which could not be styled and failed on
+ * accessibility. The dialog is a native <dialog> + showModal(), so the browser
+ * supplies the focus trap, Escape handling and focus restoration.
+ */
+
+{
+  const dlgFile = path.join(__dirname, '_dlg_probe.html');
+  fs.writeFileSync(dlgFile, `<!DOCTYPE html><html><body>
+    <textarea id="t" data-enterraedit><p>hello world</p></textarea>
+    <script src="dist/enterraedit.min.js"><\/script></body></html>`);
+  const dp = await browser.newPage();
+  const dlgErrors = [];
+  dp.on('pageerror', (e) => dlgErrors.push(e.message));
+  // Any native dialog means window.prompt/alert is still in the code path.
+  let nativeDialog = false;
+  dp.on('dialog', async (d) => { nativeDialog = true; await d.dismiss(); });
+  await dp.goto('file://' + dlgFile, { waitUntil: 'networkidle0' });
+  await dp.waitForSelector('.ee-editor');
+
+  const selectAll = () => dp.evaluate(() => {
+    const ed = window.EnterraEdit.getInstance(document.getElementById('t'));
+    const tr = ed.view.state.tr.setSelection(
+      ed.view.state.selection.constructor.create(ed.view.state.doc, 1, ed.view.state.doc.content.size - 1)
+    );
+    ed.view.dispatch(tr);
+  });
+  const openLinkDialog = async () => {
+    const box = await dp.evaluate(() => {
+      const b = [...document.querySelectorAll('.ee-btn')].find((x) => x.dataset.key === 'link');
+      b.scrollIntoView();
+      const r = b.getBoundingClientRect();
+      return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    });
+    await dp.mouse.click(box.x, box.y);
+    await new Promise((r) => setTimeout(r, 300));
+  };
+  const dlgHtml = () => dp.evaluate(() =>
+    window.EnterraEdit.getInstance(document.getElementById('t')).getHTML());
+  const setField = (v) => dp.evaluate((val) => {
+    const i = document.querySelector('.ee-dialog-input');
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    setter.call(i, val);
+    i.dispatchEvent(new Event('input', { bubbles: true }));
+  }, v);
+
+  await selectAll();
+  await openLinkDialog();
+  check('link dialog opens', await dp.evaluate(() => !!document.querySelector('.ee-dialog')?.open));
+  check('link dialog is modal (focus trapped by the browser)',
+    await dp.evaluate(() => document.querySelector('.ee-dialog').matches(':modal')));
+  check('link dialog focuses its input',
+    await dp.evaluate(() => document.activeElement.className.includes('ee-dialog-input')));
+  check('link dialog is labelled for screen readers', await dp.evaluate(() => {
+    const d = document.querySelector('.ee-dialog');
+    const id = d.getAttribute('aria-labelledby');
+    return !!id && !!document.getElementById(id);
+  }));
+  check('link dialog has an alert region for errors',
+    await dp.evaluate(() => document.querySelector('.ee-dialog-error')?.getAttribute('role') === 'alert'));
+
+  await setField('javascript:alert(1)');
+  // Focus the field explicitly: earlier assertions in this suite move focus
+  // around, and Enter only submits when it reaches the dialog's own input.
+  await dp.evaluate(() => document.querySelector('.ee-dialog-input').focus());
+  await dp.keyboard.press('Enter');
+  await new Promise((r) => setTimeout(r, 300));
+  check('unsafe URL is rejected inline, dialog stays open',
+    await dp.evaluate(() => {
+      const e = document.querySelector('.ee-dialog-error');
+      return !!e && !e.hidden && !!document.querySelector('.ee-dialog')?.open;
+    }));
+  check('unsafe URL inserts nothing', !(await dlgHtml()).includes('javascript'));
+
+  await setField('example.com');
+  await dp.evaluate(() => document.querySelector('.ee-dialog-input').focus());
+  await dp.keyboard.press('Enter');
+  await new Promise((r) => setTimeout(r, 400));
+  check('bare domain is accepted and dialog closes',
+    await dp.evaluate(() => !document.querySelector('.ee-dialog')));
+  const linked = await dlgHtml();
+  check('link applied with https prefix', linked.includes('href="https://example.com"'), linked);
+  check('link carries rel=noopener noreferrer nofollow',
+    linked.includes('rel="noopener noreferrer nofollow"'));
+
+  await selectAll();
+  await openLinkDialog();
+  check('existing link is detected and prefilled',
+    (await dp.evaluate(() => document.querySelector('.ee-dialog-input').value)) === 'https://example.com');
+
+  await dp.keyboard.press('Escape');
+  await new Promise((r) => setTimeout(r, 300));
+  check('Escape closes the dialog',
+    await dp.evaluate(() => !document.querySelector('.ee-dialog')));
+  check('Escape returns focus to the editor',
+    await dp.evaluate(() => document.activeElement.className.includes('ee-editor')));
+
+  check('no native prompt or alert is used anywhere', nativeDialog === false);
+  check('link dialog produces no console errors',
+    dlgErrors.length === 0, dlgErrors.slice(0, 2).join(' | ') || 'clean');
+
+  await dp.close();
+  fs.unlinkSync(dlgFile);
+}
+
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
 
 const hasDestroy = await page.evaluate(() =>
  typeof window.EnterraEdit.prototype.destroy === 'function'

@@ -181,6 +181,136 @@ export const STYLES = `
 /* ProseMirror's gap cursor, shown when the caret sits between blocks. */
 .ee-editor .ProseMirror-gapcursor::after { border-block-start-color: var(--ee-fg); }
 
+/* ---------- dialog ----------
+ *
+ * Uses the same tokens as the editor, so it follows light, dark, sepia and a
+ * custom accent with no extra work. Custom properties inherit into the top
+ * layer, which is why no theme values are repeated here.
+ */
+
+.ee-dialog {
+  padding: 0;
+  border: 1px solid var(--ee-border);
+  border-radius: var(--ee-radius);
+  background: var(--ee-bg);
+  color: var(--ee-fg);
+  font-family: var(--ee-font);
+  font-size: var(--ee-font-size);
+  inline-size: min(440px, calc(100vw - 2rem));
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .18);
+}
+
+.ee-dialog::backdrop {
+  background: rgba(0, 0, 0, .45);
+}
+
+.ee-dialog-form {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px;
+}
+
+.ee-dialog-title {
+  margin: 0 32px 6px 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Logical position keeps the close button on the correct side in RTL. */
+.ee-dialog-close {
+  position: absolute;
+  inset-block-start: 12px;
+  inset-inline-end: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 30px;
+  block-size: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ee-muted);
+  cursor: pointer;
+}
+
+.ee-dialog-close svg { inline-size: 16px; block-size: 16px; }
+.ee-dialog-close:hover { background: var(--ee-hover); color: var(--ee-fg); }
+
+.ee-dialog-label {
+  font-size: .8rem;
+  color: var(--ee-muted);
+}
+
+.ee-dialog-input {
+  inline-size: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--ee-border-strong);
+  border-radius: 4px;
+  background: var(--ee-bg);
+  color: var(--ee-fg);
+  font: inherit;
+  font-size: .92rem;
+}
+
+.ee-dialog-input:focus-visible {
+  outline: 2px solid var(--ee-focus);
+  outline-offset: 0;
+  border-color: var(--ee-focus);
+}
+
+.ee-dialog-error {
+  margin: 2px 0 0;
+  color: #b91c1c;
+  font-size: .82rem;
+}
+
+.ee-dialog-error[hidden] { display: none; }
+
+@media (prefers-color-scheme: dark) {
+  .ee-theme-dark .ee-dialog-error { color: #fca5a5; }
+}
+
+.ee-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-block-start: 12px;
+}
+
+.ee-btn-primary,
+.ee-btn-secondary {
+  padding: 7px 14px;
+  border-radius: 4px;
+  font: inherit;
+  font-size: .88rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.ee-btn-primary {
+  background: var(--ee-focus);
+  /* Text on the accent has to contrast with it, not with the page, so this is
+     not a theme token. White reads correctly on every preset accent we ship. */
+  color: #fff;
+}
+
+.ee-btn-secondary {
+  background: transparent;
+  color: var(--ee-fg);
+  border-color: var(--ee-border-strong);
+}
+
+.ee-btn-secondary:hover { background: var(--ee-hover); }
+
+.ee-btn-primary:focus-visible,
+.ee-btn-secondary:focus-visible {
+  outline: 2px solid var(--ee-focus);
+  outline-offset: 1px;
+}
+
 /* ---------- status ---------- */
 
 .ee-status {

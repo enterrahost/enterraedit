@@ -33,6 +33,10 @@ export const STRINGS = {
     linkPrompt: 'Enter URL',
     linkApply: 'Apply',
     linkCancel: 'Cancel',
+    linkRemove: 'Remove link',
+    linkInvalid: 'That does not look like a safe web address. Use http, https, mailto or tel.',
+    close: 'Close',
+    dialogLabel: 'Link',
     characterCount: '{n} characters',
     badge: 'EnterraEdit'
   },
@@ -60,6 +64,10 @@ export const STRINGS = {
     linkPrompt: 'URL eingeben',
     linkApply: 'Anwenden',
     linkCancel: 'Abbrechen',
+    linkRemove: 'Link entfernen',
+    linkInvalid: 'Das sieht nicht nach einer sicheren Webadresse aus. Verwenden Sie http, https, mailto oder tel.',
+    close: 'Schliessen',
+    dialogLabel: 'Link',
     characterCount: '{n} Zeichen',
     badge: 'EnterraEdit'
   },
@@ -87,6 +95,10 @@ export const STRINGS = {
     linkPrompt: 'أدخل عنوان URL',
     linkApply: 'تطبيق',
     linkCancel: 'إلغاء',
+    linkRemove: 'إزالة الرابط',
+    linkInvalid: 'يبدو أن هذا ليس عنوان ويب آمنًا. استخدم http أو https أو mailto أو tel.',
+    close: 'إغلاق',
+    dialogLabel: 'رابط',
     characterCount: '{n} حرفًا',
     badge: 'EnterraEdit'
   }

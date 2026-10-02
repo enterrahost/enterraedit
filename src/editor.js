@@ -37,6 +37,7 @@ import { STYLES } from './styles.js';
 import { VERSION } from './version.js';
 import { sizeTokens, fontForLang, FONT_STACKS } from './sizing.js';
 import { sanitizeUrl } from './url.js';
+import { openDialog } from './dialog.js';
 import { buildTokens, resolveTheme, THEMES } from './themes.js';
 import {
   buildBadge,
@@ -302,6 +303,8 @@ export class EnterraEdit {
   _applyTheme() {
     const built = buildTokens(this.options.theme, this.options.accent, null);
     this.themeName = built.name;
+    // Kept so overlays rendered outside .ee-root can carry the same theme.
+    this.themeTokens = built.tokens;
     this.root.setAttribute('data-ee-theme', built.name);
     for (const [prop, value] of Object.entries(built.tokens)) {
       this.root.style.setProperty(prop, value);
@@ -661,34 +664,111 @@ export class EnterraEdit {
     this._refresh();
   }
 
-  _promptLink() {
+  /**
+   * Insert or edit a link.
+   *
+   * The dialog is only UI. Validation still happens twice: here for immediate
+   * feedback, and again in the schema's link mark, which is the guard that
+   * actually matters because setHTML and paste bypass this path entirely.
+   */
+  async _promptLink() {
     const { from, to } = this.view.state.selection;
-    const existing = this.view.state.doc.rangeHasMark(
-      from,
-      to,
-      schema.marks.link
-    )
-      ? schema.marks.link.isInSet(this.view.state.doc.resolve(from).marks())
-      : null;
-    const answer = window.prompt(t(this.strings, 'linkPrompt'), (existing && existing.attrs.href) || '');
-    if (answer === null) return;
-    const url = sanitizeUrl(answer);
-    if (!url) {
-      window.alert(t(this.strings, 'linkPrompt'));
+
+    // Look for the mark on the nodes actually covered by the selection, rather
+    // than on the position itself. `$from.marks()` reports nothing at a mark
+    // boundary, so probing the resolved position alone misses a link that
+    // starts exactly at the selection start, which is the common case when the
+    // whole paragraph is selected.
+    let existing = null;
+    this.view.state.doc.nodesBetween(from, to, (node) => {
+      if (existing || !node.isText) return;
+      const mark = schema.marks.link.isInSet(node.marks);
+      if (mark) existing = mark;
+    });
+    // Fall back to the cursor position, for a collapsed selection inside a link.
+    if (!existing) {
+      existing = schema.marks.link.isInSet(this.view.state.doc.resolve(from).marks());
+    }
+    const currentHref = (existing && existing.attrs.href) || '';
+
+    const { action, values } = await openDialog({
+      strings: this.strings,
+      title: t(this.strings, 'link'),
+      fields: [
+        {
+          name: 'href',
+          label: t(this.strings, 'linkPrompt'),
+          value: currentHref,
+          // Deliberately type="text", not type="url". Native URL validation
+          // rejects a bare domain like "example.com", which blocks form
+          // submission entirely, so the submit event never fires and our own
+          // sanitiser never runs. The dialog would appear frozen. sanitizeUrl
+          // accepts bare domains and prefixes https, so it does the job better
+          // than the browser's stricter rule.
+          type: 'text',
+          placeholder: 'https://'
+        }
+      ],
+      submit: t(this.strings, 'linkApply'),
+      // Only offer removal when there is something to remove.
+      extra: existing ? t(this.strings, 'linkRemove') : null,
+      dir: this.options.dir,
+      tokens: this.themeTokens,
+      onSubmit: ({ href }) => {
+        const trimmed = (href || '').trim();
+        // An empty box on an existing link means remove it, which is what
+        // clearing the field implies.
+        if (!trimmed) return existing ? null : t(this.strings, 'linkInvalid');
+        return sanitizeUrl(trimmed) ? null : t(this.strings, 'linkInvalid');
+      }
+    });
+
+    if (action === 'extra') {
+      this._removeLink();
+      this.view.focus();
       return;
     }
-    const mark = schema.marks.link.create({ href: url });
-    const tr = this.view.state.tr;
-    if (from === to) {
-      tr.addStoredMark(mark);
-    } else {
-      tr.addMark(from, to, mark);
+
+    if (action !== 'submit') {
+      this.view.focus();
+      return;
     }
+
+    const raw = ((values && values.href) || '').trim();
+
+    // Clearing the field on an existing link removes it rather than doing
+    // nothing, which is what the empty submit was allowed through for.
+    if (!raw) {
+      this._removeLink();
+      this.view.focus();
+      return;
+    }
+
+    const href = sanitizeUrl(raw);
+    if (!href) {
+      this.view.focus();
+      return;
+    }
+
+    const mark = schema.marks.link.create({ href });
+    const tr = this.view.state.tr;
+    if (from === to) tr.addStoredMark(mark);
+    else tr.addMark(from, to, mark);
     this.view.dispatch(tr);
     this.view.focus();
   }
 
-  /* -------- state reflection -------- */
+  /** Strip the link mark from the current selection. */
+  _removeLink() {
+    const { from, to } = this.view.state.selection;
+    const tr = this.view.state.tr;
+    if (from === to) {
+      tr.removeStoredMark(schema.marks.link);
+    } else {
+      tr.removeMark(from, to, schema.marks.link);
+    }
+    this.view.dispatch(tr);
+  }
 
   _refresh() {
     const state = this.view.state;
@@ -909,5 +989,12 @@ export function autoInitWhenReady() {
 if (typeof window !== 'undefined') {
   window.EnterraEdit = EnterraEdit;
   window.EnterraEdit.initEditors = initEditors;
+  // Auto-init gives the integrator no handle on the instance it created, which
+  // makes the public API unreachable from a host page. These close that gap.
+  window.EnterraEdit.instances = instances;
+  window.EnterraEdit.getInstance = (target) => {
+    const el = typeof target === 'string' ? document.getElementById(target) : target;
+    return instances.find((i) => i.el === el) || null;
+  };
   autoInitWhenReady();
 }
