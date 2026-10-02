@@ -1,0 +1,66 @@
+{
+  "name": "enterraedit",
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "prebuild": "node scripts/sync-version.mjs",
+    "build": "esbuild src/index.js --bundle --minify --format=iife --global-name=EnterraEditBundle --outfile=dist/enterraedit.min.js",
+    "build:dev": "esbuild src/index.js --bundle --format=iife --global-name=EnterraEditBundle --outfile=dist/enterraedit.js",
+    "test": "node scripts/check-readme-images.mjs && node test.mjs",
+    "check:images": "node scripts/check-readme-images.mjs",
+    "prepublishOnly": "npm run build && npm test",
+    "pack:check": "npm pack --dry-run"
+  },
+  "dependencies": {
+    "prosemirror-commands": "^1.7.2",
+    "prosemirror-history": "^1.5.1",
+    "prosemirror-keymap": "^1.2.3",
+    "prosemirror-model": "^1.25.12",
+    "prosemirror-schema-basic": "^1.2.5",
+    "prosemirror-schema-list": "^1.5.1",
+    "prosemirror-state": "^1.4.4",
+    "prosemirror-view": "^1.42.6"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.12.0",
+    "esbuild": "^0.28.2"
+  },
+  "description": "Drop-in rich text editor. One script tag, no build step, MIT.",
+  "license": "MIT",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./dist/enterraedit.min.js": "./dist/enterraedit.min.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/enterrahost/enterraedit.git"
+  },
+  "keywords": [
+    "editor",
+    "wysiwyg",
+    "rich-text",
+    "prosemirror",
+    "drop-in",
+    "textarea",
+    "contenteditable"
+  ],
+  "homepage": "https://enterrahost.com/enterraedit",
+  "bugs": {
+    "url": "https://github.com/enterrahost/enterraedit/issues"
+  },
+  "author": {
+    "name": "Enterrahost",
+    "url": "https://enterrahost.com"
+  },
+  "unpkg": "dist/enterraedit.min.js",
+  "jsdelivr": "dist/enterraedit.min.js",
+  "browser": "dist/enterraedit.min.js"
+}

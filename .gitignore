@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build output. The core is consumed as source (npm) or built by the consumer
+# (the CDN repo). Publishing a bundle from here would mean two artefacts with
+# one version number, which is how they drift.
+dist/
+
+# Editor / OS noise
+.DS_Store
+*.log
+
+# Test scaffolding written by test.mjs during a run
+_c.html
+_sec.html
+_p.html
+_cdn_probe.html
+_form_probe.html
+_probe.html
+
+# npm pack output
+*.tgz
