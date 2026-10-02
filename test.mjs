@@ -792,6 +792,84 @@ check('bare domain gets https:// prefixed',
 check('empty and null inputs return null',
  urlCases.empty === null && urlCases.nullish === null);
 
+/* ---------- 13m. toolbar scroll affordance ----------
+ * On narrow screens the toolbar scrolls sideways. Mobile browsers hide
+ * scrollbars, so a toolbar clipped mid-button reads as broken rather than
+ * scrollable. A fade on the trailing edge is the only cue that says otherwise.
+ */
+
+await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2 });
+await new Promise((r) => setTimeout(r, 300));
+
+const fade = await page.evaluate(async () => {
+  const wrap = document.querySelectorAll('.ee-root')[0].querySelector('.ee-toolbar-wrap');
+  if (!wrap) return { missing: true };
+  const bar = wrap.querySelector('.ee-toolbar');
+  const read = () => ({
+    atEnd: wrap.classList.contains('ee-toolbar-at-end'),
+    opacity: getComputedStyle(wrap, '::after').opacity
+  });
+  const start = read();
+  bar.scrollLeft = 9999;
+  await new Promise((r) => setTimeout(r, 250));
+  const end = read();
+  bar.scrollLeft = 0;
+  await new Promise((r) => setTimeout(r, 250));
+  return {
+    start,
+    end,
+    restored: read(),
+    scrollable: bar.scrollWidth > bar.clientWidth,
+    reachesEnd: Math.round(bar.scrollLeft) !== 9999
+  };
+});
+
+check('toolbar wrapper exists for the fade cue', !fade.missing);
+check('toolbar overflows and scrolls on a narrow viewport', fade.scrollable === true);
+check('fade is visible when there is more toolbar to reach',
+  fade.start.opacity === '1' && fade.start.atEnd === false,
+  `opacity=${fade.start.opacity} atEnd=${fade.start.atEnd}`);
+check('fade disappears at the end of the scroll range',
+  fade.end.opacity === '0' && fade.end.atEnd === true,
+  `opacity=${fade.end.opacity} atEnd=${fade.end.atEnd}`);
+check('fade returns when scrolled back',
+  fade.restored.opacity === '1', `opacity=${fade.restored.opacity}`);
+
+await page.setViewport({ width: 900, height: 1200, deviceScaleFactor: 2 });
+await new Promise((r) => setTimeout(r, 250));
+
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- */
 /* ---------- 14. destroy() exists (original leaked) ---------- */
 /* ---------- 14. destroy() exists (original leaked) ---------- */
 /* ---------- 14. destroy() exists (original leaked) ---------- */

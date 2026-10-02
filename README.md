@@ -300,7 +300,7 @@ No framework, no viewport hacks:
 | --- | --- |
 | any | fills its container, capped so text never stretches to an unreadable measure |
 | ≤ 600px | tighter padding, shorter minimum height |
-| ≤ 420px | toolbar scrolls sideways rather than wrapping into four rows; badge hidden |
+| ≤ 420px | toolbar scrolls sideways rather than wrapping into four rows, with a fade cue that clears at the end; badge hidden |
 | `pointer: coarse` | touch targets grow to 40px |
 | landscape phone | height cap reduced, since viewport height is the scarce resource |
 

@@ -276,6 +276,28 @@ export const STYLES = `
     border-radius: 2px;
   }
 
+  /* Scrolling is not discoverable on its own. Mobile browsers hide
+     scrollbars, so a toolbar clipped mid-button reads as broken rather than
+     as scrollable. A fade on the trailing edge shows there is more to reach.
+     The wrapper exists purely to carry this pseudo-element, since a scrolling
+     element cannot position one over its own overflow. */
+  .ee-toolbar-wrap { position: relative; }
+  .ee-toolbar-wrap::after {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    inline-size: 28px;
+    pointer-events: none;
+    background: linear-gradient(to right, transparent, var(--ee-toolbar-bg) 75%);
+    opacity: 1;
+    transition: opacity .15s linear;
+  }
+
+  /* At the end of the scroll range there is nothing more to reveal, so the
+     fade goes away rather than promising content that is not there. */
+  .ee-toolbar-at-end::after { opacity: 0; }
+
   .ee-sep { flex: 0 0 auto; }
   .ee-btn { flex: 0 0 auto; }
 

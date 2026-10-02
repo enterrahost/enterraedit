@@ -414,7 +414,13 @@ export class EnterraEdit {
     }
 
     if (this.options.toolbar) {
-      this.root.appendChild(this._buildToolbar());
+      // The toolbar itself scrolls on narrow screens. The wrapper exists so a
+      // fade can sit over the trailing edge, which is the only cue that there
+      // is more to reach once the browser hides the scrollbar.
+      this.toolbarWrap = document.createElement('div');
+      this.toolbarWrap.className = 'ee-toolbar-wrap';
+      this.toolbarWrap.appendChild(this._buildToolbar());
+      this.root.appendChild(this.toolbarWrap);
     }
 
     this.editorHost = document.createElement('div');
@@ -484,6 +490,8 @@ export class EnterraEdit {
 
     this.view.dom.classList.add('ee-editor');
     this._refresh();
+    // Now that everything is in the document, measure the toolbar for real.
+    if (this._fadeSync) this._fadeSync();
   }
 
   _plugins() {
@@ -582,7 +590,37 @@ export class EnterraEdit {
     });
 
     this._wireToolbarKeys(bar);
+    this._wireToolbarFade(bar);
     return bar;
+  }
+
+  /**
+   * Hide the trailing fade once the toolbar is scrolled to its end.
+   *
+   * The fade promises content beyond the edge. Leaving it visible at the end
+   * would be a lie, so it is driven by scroll position rather than being
+   * always on. RTL reverses the sign of scrollLeft in some browsers, hence
+   * comparing absolute distances rather than raw values.
+   */
+  _wireToolbarFade(bar) {
+    const update = () => {
+      const max = bar.scrollWidth - bar.clientWidth;
+      const atEnd = Math.abs(bar.scrollLeft) >= max - 2;
+      if (this.toolbarWrap) {
+        this.toolbarWrap.classList.toggle('ee-toolbar-at-end', atEnd);
+      }
+    };
+    bar.addEventListener('scroll', update, { passive: true });
+    // Also on resize, since the overflow can appear or vanish with width.
+    if (typeof window !== 'undefined') {
+      this._fadeResize = update;
+      window.addEventListener('resize', update, { passive: true });
+    }
+    // Deferred: this runs while the toolbar is still detached, so clientWidth
+    // is 0 and every measurement would be wrong. By the next frame the element
+    // is in the document and has real dimensions.
+    this._fadeSync = update;
+    requestAnimationFrame(update);
   }
 
   /**
@@ -817,6 +855,7 @@ export class EnterraEdit {
       this.el.removeEventListener('input', this._onExternalInput);
       this.el.removeEventListener('change', this._onExternalInput);
     }
+    if (this._fadeResize) window.removeEventListener('resize', this._fadeResize);
     this.view.destroy();
     if (this.root.parentNode) this.root.parentNode.removeChild(this.root);
     this.el.style.display = '';
