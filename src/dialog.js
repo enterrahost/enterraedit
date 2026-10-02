@@ -113,11 +113,6 @@ export function openDialog(opts) {
       // The error message is referenced by the input, so a screen reader reads
       // it as part of the field rather than as loose text.
       input.setAttribute('aria-describedby', id + '-err');
-      // Clear a stale error as soon as the user changes the value, so the
-      // message does not outlive the input that caused it.
-      input.addEventListener('input', () => {
-        if (!error.hidden) error.hidden = true;
-      });
       form.appendChild(input);
       inputs[field.name] = input;
     }
@@ -137,6 +132,25 @@ export function openDialog(opts) {
     error.setAttribute('role', 'alert');
     error.hidden = true;
     form.appendChild(error);
+
+    // Clear a stale error as soon as the user changes a value, so the message
+    // does not outlive the input that caused it.
+    //
+    // Attached here rather than in the field loop above, because `error` is
+    // declared between the two and a listener added earlier would close over it
+    // before it exists.
+    //
+    // The timestamp guard matters: the editor patches the value setter to
+    // dispatch a deferred `input` event, which can arrive just after a submit
+    // has shown an error and would otherwise wipe it straight away. Ignoring
+    // anything older than the last submit keeps the message on screen.
+    let lastSubmitAt = 0;
+    for (const input of Object.values(inputs)) {
+      input.addEventListener('input', (e) => {
+        if (e.timeStamp < lastSubmitAt) return;
+        if (!error.hidden) error.hidden = true;
+      });
+    }
 
     const actions = document.createElement('div');
     actions.className = 'ee-dialog-actions';
@@ -186,6 +200,7 @@ export function openDialog(opts) {
       if (problem) {
         // Keep the dialog open: preventDefault stops the native close.
         e.preventDefault();
+        lastSubmitAt = e.timeStamp;
         showError(problem);
         return;
       }

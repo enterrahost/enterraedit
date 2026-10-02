@@ -13,9 +13,24 @@
 import { Schema } from 'prosemirror-model';
 import { schema as basicSchema } from 'prosemirror-schema-basic';
 import { addListNodes } from 'prosemirror-schema-list';
+import { tableNodes } from 'prosemirror-tables';
 import { sanitizeUrl, sanitizeImageSrc } from './url.js';
 
-const nodes = addListNodes(basicSchema.spec.nodes, 'paragraph block*', 'block');
+/**
+ * Table nodes come from prosemirror-tables rather than being hand-rolled.
+ * Cell selection, column resizing and the command set all depend on their
+ * exact shape, and getting that subtly wrong is worse than not having tables.
+ */
+const tableSpec = tableNodes({
+  tableGroup: 'block',
+  cellContent: 'block+',
+  cellAttributes: {}
+});
+
+let nodes = addListNodes(basicSchema.spec.nodes, 'paragraph block*', 'block');
+for (const [name, spec] of Object.entries(tableSpec)) {
+  nodes = nodes.addToEnd(name, spec);
+}
 
 /**
  * `prosemirror-schema-basic` ships only `em`, `strong`, `link` and `code`.

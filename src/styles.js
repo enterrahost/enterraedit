@@ -181,6 +181,67 @@ export const STYLES = `
 /* ProseMirror's gap cursor, shown when the caret sits between blocks. */
 .ee-editor .ProseMirror-gapcursor::after { border-block-start-color: var(--ee-fg); }
 
+/* ---------- images and tables ---------- */
+
+.ee-editor img {
+  max-inline-size: 100%;
+  block-size: auto;
+  border-radius: 4px;
+}
+
+/* Selected images and cells need a visible state, or drag and selection
+   look like nothing happened. */
+.ee-editor img.ProseMirror-selectednode {
+  outline: 2px solid var(--ee-focus);
+  outline-offset: 2px;
+}
+
+.ee-editor table {
+  border-collapse: collapse;
+  inline-size: 100%;
+  margin-block: 0.75em;
+  table-layout: fixed;
+  overflow: hidden;
+}
+
+.ee-editor th,
+.ee-editor td {
+  border: 1px solid var(--ee-border);
+  padding: 6px 10px;
+  vertical-align: top;
+  position: relative;
+}
+
+.ee-editor th {
+  background: var(--ee-toolbar-bg);
+  font-weight: 600;
+  text-align: start;
+}
+
+/* prosemirror-tables marks selected cells; without this, selecting a column
+   is invisible. */
+.ee-editor .selectedCell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--ee-focus);
+  opacity: .12;
+  pointer-events: none;
+}
+
+.ee-editor .column-resize-handle {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: -2px;
+  inline-size: 4px;
+  background: var(--ee-focus);
+  pointer-events: none;
+}
+
+.ee-editor .tableWrapper { overflow-x: auto; }
+
+.ee-editor .resize-cursor { cursor: col-resize; }
+
 /* ---------- dialog ----------
  *
  * Uses the same tokens as the editor, so it follows light, dark, sepia and a

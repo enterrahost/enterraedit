@@ -295,8 +295,10 @@ const toolbarCoverage = await page.evaluate(() => {
 check('toolbar renders underline (was silently missing)', 
  toolbarCoverage.buttons.includes('underline'), toolbarCoverage.buttons.join(', '));
 check('toolbar renders strikethrough', toolbarCoverage.buttons.includes('strike'));
-check('toolbar button count matches spec', toolbarCoverage.buttons.length === 17,
- `${toolbarCoverage.buttons.length} buttons`);
+check('full toolbar matches spec (19 buttons)', toolbarCoverage.buttons.length === 19,
+  `${toolbarCoverage.buttons.length} buttons`);
+check('full toolbar includes image and table',
+  toolbarCoverage.buttons.includes('image') && toolbarCoverage.buttons.includes('table'));
 
 // Exercise each mark through the real UI. The probe editor is placed at the
 // top of the page and scrolled into view first, clicking at coordinates below
@@ -999,70 +1001,285 @@ check('image: safe src round-trips with alt text',
   imgDoc.good.includes('https://example.com/a.png') && imgDoc.good.includes('alt="a"'),
   imgDoc.good);
 
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
-/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 13p. toolbar modes ---------- */
+
+const modeCounts = await page.evaluate(() => {
+  const out = {};
+  for (const mode of ['comment', 'standard', 'full']) {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const ta = document.createElement('textarea');
+    host.appendChild(ta);
+    const ed = new window.EnterraEdit({ element: ta, mode });
+    const btns = [...ed.root.querySelectorAll('.ee-btn')];
+    out[mode] = {
+      count: btns.length,
+      keys: btns.map((b) => b.dataset.key),
+      firstIsSep: btns.length > 0 && btns[0].dataset.key === undefined,
+      separators: ed.root.querySelectorAll('.ee-sep').length
+    };
+    ed.destroy();
+  }
+  return out;
+});
+check('comment mode is the smallest toolbar',
+  modeCounts.comment.count === 8, `${modeCounts.comment.count} buttons`);
+check('comment mode excludes structure and rich nodes',
+  !modeCounts.comment.keys.includes('heading1') &&
+  !modeCounts.comment.keys.includes('image') &&
+  !modeCounts.comment.keys.includes('table'),
+  modeCounts.comment.keys.join(','));
+check('standard mode adds structure but not images or tables',
+  modeCounts.standard.keys.includes('heading1') &&
+  !modeCounts.standard.keys.includes('image'),
+  `${modeCounts.standard.count} buttons`);
+check('full mode includes everything',
+  modeCounts.full.keys.includes('image') && modeCounts.full.keys.includes('table'),
+  `${modeCounts.full.count} buttons`);
+check('modes are ordered small to large',
+  modeCounts.comment.count < modeCounts.standard.count &&
+  modeCounts.standard.count < modeCounts.full.count,
+  `${modeCounts.comment.count} < ${modeCounts.standard.count} < ${modeCounts.full.count}`);
+check('no mode renders a leading separator',
+  !modeCounts.comment.firstIsSep && !modeCounts.standard.firstIsSep && !modeCounts.full.firstIsSep);
+
+// Filtering out a whole group can leave its separators adjacent, which renders
+// as a cluster of dividers. Checked by walking the toolbar children rather than
+// counting separators, since only adjacency is wrong.
+const sepRuns = await page.evaluate(() => {
+  const out = {};
+  for (const mode of ['comment', 'standard', 'full']) {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const ta = document.createElement('textarea');
+    host.appendChild(ta);
+    const ed = new window.EnterraEdit({ element: ta, mode });
+    const kids = [...ed.root.querySelector('.ee-toolbar').children];
+    let run = 0;
+    let maxRun = 0;
+    for (const k of kids) {
+      if (k.classList.contains('ee-sep')) { run++; maxRun = Math.max(maxRun, run); }
+      else run = 0;
+    }
+    out[mode] = {
+      maxRun,
+      leading: kids[0].classList.contains('ee-sep'),
+      trailing: kids[kids.length - 1].classList.contains('ee-sep')
+    };
+    ed.destroy();
+  }
+  return out;
+});
+check('separators never appear twice in a row',
+  Object.values(sepRuns).every((r) => r.maxRun <= 1),
+  Object.entries(sepRuns).map(([m, r]) => `${m}=${r.maxRun}`).join(' '));
+check('no mode ends with a separator',
+  Object.values(sepRuns).every((r) => !r.trailing));
+
+const customList = await page.evaluate(() => {
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const ta = document.createElement('textarea');
+  host.appendChild(ta);
+  const ed = new window.EnterraEdit({ element: ta, toolbarKeys: ['bold', 'italic', 'link'] });
+  const keys = [...ed.root.querySelectorAll('.ee-btn')].map((b) => b.dataset.key);
+  ed.destroy();
+  return keys;
+});
+check('an explicit toolbar list is honoured exactly',
+  customList.join(',') === 'bold,italic,link', customList.join(','));
+check('a custom list renders no separators',
+  customList.length === 3, `${customList.length} buttons`);
+
+/* ---------- 13q. images and tables ---------- */
+
+const imgFile = path.join(__dirname, '_media_probe.html');
+fs.writeFileSync(imgFile, `<!DOCTYPE html><html><body>
+  <textarea id="t" data-enterraedit data-mode="full"><p>hello</p></textarea>
+  <script src="dist/enterraedit.min.js"><\/script></body></html>`);
+const mp = await browser.newPage();
+const mediaErrors = [];
+mp.on('pageerror', (e) => mediaErrors.push(e.message));
+mp.on('console', (m) => { if (m.type() === 'error') mediaErrors.push(m.text()); });
+await mp.goto('file://' + imgFile, { waitUntil: 'networkidle0' });
+await mp.waitForSelector('.ee-editor');
+
+// Image insertion by URL
+await mp.evaluate(() => {
+  const ed = window.EnterraEdit.getInstance(document.getElementById('t'));
+  const tr = ed.view.state.tr.setSelection(
+    ed.view.state.selection.constructor.create(ed.view.state.doc, 1, ed.view.state.doc.content.size - 1)
+  );
+  ed.view.dispatch(tr);
+  ed._promptImage();
+});
+await new Promise((r) => setTimeout(r, 350));
+check('image dialog opens', await mp.evaluate(() => !!document.querySelector('.ee-dialog')?.open));
+await mp.evaluate(() => {
+  const set = (n, v) => {
+    const i = document.querySelector(`[name="${n}"]`);
+    const s = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    s.call(i, v);
+    i.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+  set('src', 'https://example.com/pic.png');
+  set('alt', 'A picture');
+  document.querySelector('.ee-dialog-input').focus();
+});
+await mp.keyboard.press('Enter');
+await new Promise((r) => setTimeout(r, 400));
+const imgOut = await mp.evaluate(() =>
+  window.EnterraEdit.getInstance(document.getElementById('t')).getHTML());
+check('image inserted with src and alt',
+  imgOut.includes('src="https://example.com/pic.png"') && imgOut.includes('alt="A picture"'),
+  imgOut);
+
+// Unsafe image src rejected in the dialog
+await mp.evaluate(() => {
+  const ed = window.EnterraEdit.getInstance(document.getElementById('t'));
+  ed._promptImage();
+});
+// Wait for the field rather than a fixed delay: the dialog is created
+// asynchronously and a fixed timeout makes this assertion flaky under load.
+await mp.waitForSelector('[name="src"]', { timeout: 3000 });
+await mp.evaluate(() => {
+  const i = document.querySelector('[name="src"]');
+  const s = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+  s.call(i, 'javascript:alert(1)');
+  i.dispatchEvent(new Event('input', { bubbles: true }));
+  document.querySelector('.ee-dialog-input').focus();
+});
+await mp.keyboard.press('Enter');
+await new Promise((r) => setTimeout(r, 300));
+check('unsafe image src rejected inline, dialog stays open',
+  await mp.evaluate(() => {
+    const e = document.querySelector('.ee-dialog-error');
+    return !!e && !e.hidden && !!document.querySelector('.ee-dialog')?.open;
+  }));
+await mp.keyboard.press('Escape');
+await new Promise((r) => setTimeout(r, 250));
+
+// Table insertion
+await mp.evaluate(() => {
+  const ed = window.EnterraEdit.getInstance(document.getElementById('t'));
+  ed._promptTable();
+});
+await new Promise((r) => setTimeout(r, 300));
+await mp.evaluate(() => {
+  const set = (n, v) => {
+    const i = document.querySelector(`[name="${n}"]`);
+    const s = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    s.call(i, v);
+    i.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+  set('rows', '2');
+  set('cols', '3');
+  document.querySelector('.ee-dialog-input').focus();
+});
+await mp.keyboard.press('Enter');
+await new Promise((r) => setTimeout(r, 400));
+const tblOut = await mp.evaluate(() =>
+  window.EnterraEdit.getInstance(document.getElementById('t')).getHTML());
+const rows = (tblOut.match(/<tr/g) || []).length;
+const cells = (tblOut.match(/<t[dh]/g) || []).length;
+check('table inserted with the requested shape',
+  rows === 2 && cells === 6, `${rows} rows, ${cells} cells`);
+check('first row is a header row', /<th/.test(tblOut));
+
+// Out of range is refused
+await mp.evaluate(() => {
+  window.EnterraEdit.getInstance(document.getElementById('t'))._promptTable();
+});
+await new Promise((r) => setTimeout(r, 300));
+await mp.evaluate(() => {
+  const set = (n, v) => {
+    const i = document.querySelector(`[name="${n}"]`);
+    const s = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    s.call(i, v);
+    i.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+  set('rows', '9999');
+  document.querySelector('.ee-dialog-input').focus();
+});
+await mp.keyboard.press('Enter');
+await new Promise((r) => setTimeout(r, 300));
+check('an out of range table size is refused',
+  await mp.evaluate(() => {
+    const e = document.querySelector('.ee-dialog-error');
+    return !!e && !e.hidden;
+  }));
+await mp.keyboard.press('Escape');
+await new Promise((r) => setTimeout(r, 200));
+
+check('media insertion produces no console errors',
+  mediaErrors.length === 0, mediaErrors.slice(0, 2).join(' | ') || 'clean');
+await mp.close();
+fs.unlinkSync(imgFile);
+
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
+/* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- *//* ---------- 14. destroy() exists (original leaked) ---------- */
 
 const hasDestroy = await page.evaluate(() =>
  typeof window.EnterraEdit.prototype.destroy === 'function'

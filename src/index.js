@@ -7,6 +7,7 @@
 
 export { EnterraEdit, initEditors, SELECTOR } from './editor.js';
 export { openDialog } from './dialog.js';
+export { MODES, MODE_NAMES, resolveToolbar, describeMode } from './modes.js';
 export { sanitizeUrl, sanitizeImageSrc, isSafeUrl, SAFE_SCHEMES } from './url.js';
 export { STRINGS, RTL_LANGS, isRtl, resolveLang, normalizeLang } from './i18n.js';
 export { THEMES, buildTokens, accentTokens, resolveTheme, isDark } from './themes.js';

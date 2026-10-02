@@ -30,5 +30,7 @@ export const ICONS = {
   unlink: wrap('<path d="M9 15l-1 1a5 5 0 0 1-7-7l2-2"/><path d="M15 9l1-1a5 5 0 0 1 7 7l-2 2"/><path d="M3 3l18 18"/>'),
   undo: wrap('<path d="M3 8h11a5 5 0 0 1 0 10H8"/><path d="M7 4L3 8l4 4"/>'),
   redo: wrap('<path d="M21 8H10a5 5 0 0 0 0 10h6"/><path d="M17 4l4 4-4 4"/>'),
-  horizontalRule: wrap('<path d="M4 12h16"/>')
+  horizontalRule: wrap('<path d="M4 12h16"/>'),
+  image: wrap('<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>'),
+  table: wrap('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16M15 4v16"/>')
 };

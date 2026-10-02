@@ -14,7 +14,7 @@ That is the entire integration. No npm, no bundler, no framework, no GPL, no
 licence key. The `<textarea>` stays in the DOM and stays in sync, so your
 existing form and server code are unchanged.
 
-One file, zero network requests, **129/129** browser tests passing. Around 76 KB
+One file, zero network requests, **147/147** browser tests passing. Around 76 KB
 gzipped at v0.2.0 (quoted with the version, because it will move).
 
 > **No branding in this build.** This is the self-hosted core. It adds nothing
@@ -211,6 +211,51 @@ The editor needs no `script-src` relaxation. It does not use `eval`,
 `new Function` or string timers, and it injects no scripts. It makes no network
 requests, loads no fonts or images of its own and uses no `connect-src`, so
 `default-src 'self'` is otherwise sufficient.
+
+### Editor modes
+
+A contact form does not need headings and code blocks. `mode` selects a toolbar
+without naming every button:
+
+| Mode | Buttons | For |
+| --- | --- | --- |
+| `comment` | 8 | replies, ticket updates, contact forms |
+| `standard` | 17 | article or page body |
+| `full` | 19 | everything, including images and tables |
+
+```html
+<textarea data-enterraedit data-mode="comment"></textarea>
+<textarea data-enterraedit data-mode="full"></textarea>
+<textarea data-enterraedit data-toolbar-keys="bold,italic,link"></textarea>
+```
+
+```js
+new EnterraEdit({ element: el, mode: 'standard' });
+new EnterraEdit({ element: el, toolbarKeys: ['bold', 'italic', 'link'] });
+```
+
+![Modes](shots/modes.png)
+
+A mode only controls **which buttons appear**. It does not change what the
+document accepts, so content pasted into a `comment` field is parsed by the same
+schema as a `full` one. To actually restrict input you would narrow the schema,
+which this does not do.
+
+### Images and tables
+
+Full mode adds an image and a table button, both reusing the same dialog
+component.
+
+![Image dialog](shots/image-dialog.png)
+
+**Images** can be inserted by URL, or by picking a file, which embeds it as a
+data URI. Embedding is convenient for a small screenshot and a poor choice for a
+photograph: base64 costs about a third more than the original bytes, and the
+string travels inside the form value, so it lands in the database, any email
+notification, and every request body. **The dialog warns above 200 KB.**
+
+**Tables** are built on `prosemirror-tables`, so cell selection, column resizing
+and Tab-to-next-cell all work. The first row is emitted as a header row.
 
 ### Dialogs
 
@@ -438,7 +483,7 @@ published to npm yet**, so `npm install enterraedit` will not work.
 ```sh
 npm install
 npm run build     # -> dist/enterraedit.min.js, ~76 KB gzipped
-npm test          # image check + 129/129 assertions in a real browser
+npm test          # image check + 147/147 assertions in a real browser
 ```
 
 To look at it, just open `demo/index.html` in a browser. No server needed: the
@@ -460,10 +505,14 @@ guard. Behavioural claims are observed, not inferred.
 
 Things that are missing or rough, roughly in the order they would bite you.
 
-**Media and image insertion are not implemented.** The editor handles text,
-structure and links, and stops there. The dialog component underneath the link
-prompt is generic, so adding them is a matter of describing fields rather than
-building another modal.
+**File upload is not implemented.** An image can be embedded as a data URI or
+referenced by URL, either of which suits a field that is posted with a form. A
+real attachment workflow needs a server endpoint to receive the file, which is
+out of scope for a drop-in editor.
+
+**No attachment node for non-image files.** Deliberate: restricting file types
+cannot be done from the browser, so offering the control would imply a guarantee
+the editor cannot make.
 
 **Paste is whatever ProseMirror gives us.** Content is validated against the
 schema, so nothing invalid gets in, but there is no explicit "paste as plain

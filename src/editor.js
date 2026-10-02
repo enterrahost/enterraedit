@@ -36,8 +36,21 @@ import { ICONS } from './icons.js';
 import { STYLES } from './styles.js';
 import { VERSION } from './version.js';
 import { sizeTokens, fontForLang, FONT_STACKS } from './sizing.js';
-import { sanitizeUrl } from './url.js';
+import { sanitizeUrl, sanitizeImageSrc } from './url.js';
 import { openDialog } from './dialog.js';
+import { resolveToolbar, MODES } from './modes.js';
+import {
+  tableEditing,
+  columnResizing,
+  tableNodes,
+  goToNextCell,
+  addRowAfter,
+  addColumnAfter,
+  deleteRow,
+  deleteColumn,
+  deleteTable,
+  isInTable
+} from 'prosemirror-tables';
 import { buildTokens, resolveTheme, THEMES } from './themes.js';
 import {
   buildBadge,
@@ -147,6 +160,9 @@ function toolbarFor(lang) {
     },
     { key: 'horizontalRule', icon: ICONS.horizontalRule, run: insertRule },
     { type: 'sep' },
+    { key: 'image', icon: ICONS.image, action: 'image' },
+    { key: 'table', icon: ICONS.table, action: 'table' },
+    { type: 'sep' },
     { key: 'undo', icon: ICONS.undo, run: undo },
     { key: 'redo', icon: ICONS.redo, run: redo }
   ];
@@ -220,7 +236,7 @@ function insertRule(state, dispatch) {
  * ------------------------------------------------------------------ */
 
 // Re-exported so existing consumers importing it from the entry point still work.
-export { sanitizeUrl };
+export { sanitizeUrl, sanitizeImageSrc };
 
 export class EnterraEdit {
   constructor(options = {}) {
@@ -244,7 +260,16 @@ export class EnterraEdit {
       // Precedence: explicit option, then the element's own dir, then the
       // language's natural direction.
       dir: options.dir || el.getAttribute('dir') || (isRtl(lang.requested) ? 'rtl' : 'ltr'),
+      // `toolbar` stays a boolean switch for backwards compatibility, while
+      // `mode` or an explicit list selects which buttons appear.
       toolbar: options.toolbar !== false,
+      mode: options.mode || el.getAttribute('data-mode') || null,
+      toolbarKeys: resolveToolbar(
+        options.mode || el.getAttribute('data-mode') || null,
+        options.toolbarKeys !== undefined
+          ? options.toolbarKeys
+          : el.getAttribute('data-toolbar-keys')
+      ),
       spellcheck: options.spellcheck !== false,
       // Theme precedence: explicit option, then the element's own data-theme,
       // then 'auto' (follow the OS).
@@ -502,6 +527,10 @@ export class EnterraEdit {
     const mod = (e) => (e.metaKey || e.ctrlKey);
     return [
       history(),
+      // Column resizing and cell selection. The plugin is what makes tables
+      // behave like tables rather than a grid of paragraphs.
+      columnResizing({ handleWidth: 5, cellMinWidth: 60 }),
+      tableEditing(),
       keymap({
         'Mod-b': toggleMark(s.marks.strong),
         'Mod-i': toggleMark(s.marks.em),
@@ -529,8 +558,16 @@ export class EnterraEdit {
           }
           return false;
         },
-        Tab: sinkListItem(s.nodes.list_item),
-        'Shift-Tab': liftListItem(s.nodes.list_item)
+        // Inside a table, Tab belongs to the table. Elsewhere it indents a
+        // list item, which is the existing behaviour.
+        Tab: (state, dispatch) => {
+          if (isInTable(state)) return goToNextCell(1)(state, dispatch);
+          return sinkListItem(s.nodes.list_item)(state, dispatch);
+        },
+        'Shift-Tab': (state, dispatch) => {
+          if (isInTable(state)) return goToNextCell(-1)(state, dispatch);
+          return liftListItem(s.nodes.list_item)(state, dispatch);
+        }
       })
     ];
   }
@@ -547,7 +584,29 @@ export class EnterraEdit {
 
     this.buttons = [];
 
-    toolbarFor(this.options.lang).forEach((item) => {
+    // Filter by key, then re-derive separators so a mode never renders a
+    // divider with nothing before or after it.
+    const allowed = this.options.toolbarKeys;
+    const items = toolbarFor(this.options.lang).filter(
+      (item) => item.type === 'sep' || !allowed || allowed.includes(item.key)
+    );
+
+    // A filtered-out group can leave its separators adjacent, which renders as
+    // a cluster of dividers. Collapse runs of separators down to one, and drop
+    // any that end up leading or trailing.
+    const trimmed = [];
+    items.forEach((item, i) => {
+      if (item.type !== 'sep') {
+        trimmed.push(item);
+        return;
+      }
+      const prev = trimmed[trimmed.length - 1];
+      const next = items.slice(i + 1).find((x) => x.type !== 'sep');
+      const alreadySeparated = prev && prev.type === 'sep';
+      if (prev && next && !alreadySeparated) trimmed.push(item);
+    });
+
+    trimmed.forEach((item) => {
       if (item.type === 'sep') {
         const sep = document.createElement('span');
         sep.className = 'ee-sep';
@@ -582,6 +641,14 @@ export class EnterraEdit {
         e.preventDefault();
         if (item.action === 'link') {
           this._promptLink();
+          return;
+        }
+        if (item.action === 'image') {
+          this._promptImage();
+          return;
+        }
+        if (item.action === 'table') {
+          this._promptTable();
           return;
         }
         this._run(item);
@@ -756,6 +823,133 @@ export class EnterraEdit {
     else tr.addMark(from, to, mark);
     this.view.dispatch(tr);
     this.view.focus();
+  }
+
+  /**
+   * Insert an image by URL.
+   *
+   * A file cannot be embedded inline here without a server to receive it, so
+   * the dialog offers a URL. A file picker is available and produces a data
+   * URI, which is convenient for a small pasted screenshot but bloats the form
+   * field badly for a photograph, so it warns above a threshold.
+   */
+  async _promptImage() {
+    const { action, values } = await openDialog({
+      strings: this.strings,
+      title: t(this.strings, 'image'),
+      dir: this.options.dir,
+      tokens: this.themeTokens,
+      fields: [
+        {
+          name: 'src',
+          label: t(this.strings, 'imageUrl'),
+          value: '',
+          type: 'text',
+          placeholder: 'https://'
+        },
+        { name: 'alt', label: t(this.strings, 'imageAlt'), value: '', type: 'text' }
+      ],
+      submit: t(this.strings, 'linkApply'),
+      onSubmit: ({ src, alt }) => {
+        const trimmed = (src || '').trim();
+        if (!trimmed) return t(this.strings, 'imageUrl');
+        const safe = sanitizeImageSrc(trimmed);
+        if (!safe) return t(this.strings, 'linkInvalid');
+        if (safe.startsWith('data:')) {
+          const warning = this._dataUriWarning(safe);
+          if (warning) return warning;
+        }
+        return null;
+      }
+    });
+
+    if (action !== 'submit') {
+      this.view.focus();
+      return;
+    }
+
+    const src = sanitizeImageSrc(((values && values.src) || '').trim());
+    if (!src) {
+      this.view.focus();
+      return;
+    }
+
+    const node = schema.nodes.image.create({
+      src,
+      alt: ((values && values.alt) || '').trim() || null
+    });
+    const tr = this.view.state.tr.replaceSelectionWith(node);
+    this.view.dispatch(tr);
+    this.view.focus();
+  }
+
+  /**
+   * Warn when a data URI would make the field unreasonably large.
+   *
+   * Base64 costs about a third more than the original bytes, and the encoded
+   * string travels inside the form value, so it lands in the database, any
+   * email notification and every server request body.
+   */
+  _dataUriWarning(src) {
+    const bytes = Math.round((src.length * 3) / 4);
+    const kb = Math.round(bytes / 1024);
+    if (kb < 200) return null;
+    return t(this.strings, 'imageTooBig', {
+      size: kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${kb} KB`,
+      encoded: `${Math.round(src.length / 1024)} KB`
+    });
+  }
+
+  /** Insert a table with a chosen size. */
+  async _promptTable() {
+    const MAX = 20;
+    const { action, values } = await openDialog({
+      strings: this.strings,
+      title: t(this.strings, 'table'),
+      dir: this.options.dir,
+      tokens: this.themeTokens,
+      fields: [
+        { name: 'rows', label: t(this.strings, 'tableRows'), value: '3', type: 'number' },
+        { name: 'cols', label: t(this.strings, 'tableCols'), value: '3', type: 'number' }
+      ],
+      submit: t(this.strings, 'linkApply'),
+      onSubmit: ({ rows, cols, header }) => {
+        const r = parseInt(rows, 10);
+        const c = parseInt(cols, 10);
+        const rOk = Number.isInteger(r) && r >= 1 && r <= MAX;
+        const cOk = Number.isInteger(c) && c >= 1 && c <= MAX;
+        if (!rOk || !cOk) return t(this.strings, 'tableSize', { max: MAX });
+        return null;
+      }
+    });
+
+    if (action !== 'submit') {
+      this.view.focus();
+      return;
+    }
+
+    const rows = Math.min(MAX, Math.max(1, parseInt(values.rows, 10) || 1));
+    const cols = Math.min(MAX, Math.max(1, parseInt(values.cols, 10) || 1));
+    this._insertTable(rows, cols);
+    this.view.focus();
+  }
+
+  _insertTable(rows, cols) {
+    const { schema: sch } = this.view.state;
+    const cell = () => sch.nodes.table_cell.createAndFill();
+    const headerCell = () => sch.nodes.table_header.createAndFill();
+    const rowNodes = [];
+    for (let r = 0; r < rows; r++) {
+      const cells = [];
+      for (let c = 0; c < cols; c++) {
+        // First row is a header, which is both correct semantics and what
+        // prosemirror-tables expects for column-wide selection to behave.
+        cells.push(r === 0 ? headerCell() : cell());
+      }
+      rowNodes.push(sch.nodes.table_row.create(null, cells));
+    }
+    const table = sch.nodes.table.create(null, rowNodes);
+    this.view.dispatch(this.view.state.tr.replaceSelectionWith(table));
   }
 
   /** Strip the link mark from the current selection. */

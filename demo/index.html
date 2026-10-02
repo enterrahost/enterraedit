@@ -246,6 +246,52 @@ Second paragraph.</textarea>
  <output id="values-out" style="margin-block-start:.5rem">(click to inspect)</output>
  </fieldset>
 
+  <fieldset>
+    <legend>11. Modes: comment, standard, full</legend>
+    <p class="note" style="margin-block-start:0">
+      A contact form does not need headings and code blocks. <code>data-mode</code>
+      selects a toolbar without naming every button.
+    </p>
+
+    <label><code>data-mode="comment"</code>, 8 buttons for replies and tickets</label>
+    <textarea id="m-comment" name="m-comment" data-enterraedit data-mode="comment" rows="3">
+      <p>Inline formatting and links only.</p>
+    </textarea>
+
+    <label style="margin-block-start:1rem"><code>data-mode="standard"</code>, 17 buttons for an article body</label>
+    <textarea id="m-std" name="m-std" data-enterraedit data-mode="standard" rows="3">
+      <p>Adds headings, lists, quotes and code.</p>
+    </textarea>
+
+    <label style="margin-block-start:1rem"><code>data-mode="full"</code>, 19 buttons, everything</label>
+    <textarea id="m-full" name="m-full" data-enterraedit data-mode="full" rows="3">
+      <p>Adds images and tables.</p>
+    </textarea>
+
+    <label style="margin-block-start:1rem">
+      Custom list, <code>data-toolbar-keys="bold,italic,link"</code>
+    </label>
+    <textarea id="m-custom" name="m-custom" data-enterraedit
+              data-toolbar-keys="bold,italic,link" rows="2">
+      <p>Exactly the buttons you name.</p>
+    </textarea>
+  </fieldset>
+
+  <fieldset>
+    <legend>12. Images and tables</legend>
+    <p class="note" style="margin-block-start:0">
+      Insert an image by URL, or pick a file to embed as a data URI. Embedding
+      suits a small screenshot and is a bad idea for a photograph: a 500 KB
+      image becomes about 667 KB inside the form field. The dialog warns above
+      200 KB.
+    </p>
+
+    <label>Full mode, try the image and table buttons</label>
+    <textarea id="rich" name="rich" data-enterraedit data-mode="full" rows="6">
+      <p>Use the toolbar to insert an image or a table.</p>
+    </textarea>
+  </fieldset>
+
  <button type="submit">Submit, dump serialised values</button>
 </form>
 
