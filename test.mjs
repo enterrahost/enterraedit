@@ -915,6 +915,32 @@ const selected = await mkHtml();
 check('a real selection still toggles across the selection',
   selected === '<p><strong>hello</strong> world here</p>', selected);
 
+// The case reported from the toolbox: type, toggle Bold on, keep typing, then
+// try to turn it off. Each click must flip the state, and the caret must stay
+// put: leaving it inside the text just unbolded made the next click read as
+// "already bold" and appear to do nothing.
+await mkSet('<p>asd<strong> sdsds</strong></p>', 10, null);
+const cycle = [];
+for (const label of ['off', 'on', 'off']) {
+  await mkClick('Bold');
+  await new Promise((r) => setTimeout(r, 200));
+  const st = await mkp.evaluate(() => {
+    const ed = window.EnterraEdit.getInstance(document.getElementById('mk'));
+    return {
+      html: ed.getHTML(),
+      from: ed.view.state.selection.from,
+      btn: document.querySelector('.ee-btn[title="Bold"]').classList.contains('is-active')
+    };
+  });
+  cycle.push({ label, ...st });
+}
+check('repeatedly toggling Bold flips the state every time',
+  cycle[0].btn === false && cycle[1].btn === true && cycle[2].btn === false,
+  cycle.map((c) => `${c.label}:btn=${c.btn}`).join(' '));
+check('and the caret stays where the person left it',
+  cycle.every((c) => c.from === 10),
+  cycle.map((c) => c.from).join(', '));
+
 // An empty paragraph has no word to expand to, and must not throw.
 await mkSet('<p></p>', 1, null);
 await mkClick('Bold');

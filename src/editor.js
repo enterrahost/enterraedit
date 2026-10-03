@@ -91,43 +91,48 @@ const instances = [];
 function toggleMarkAtWord(markType) {
   return (state, dispatch, view) => {
     const { empty, $from, from } = state.selection;
-
-    // A real selection, or a cursor with nowhere to expand: leave it alone.
     if (!empty || !markType) return toggleMark(markType)(state, dispatch, view);
 
-    const parent = $from.parent;
     const offset = $from.parentOffset;
-    const text = parent.textContent;
-
-    // Walk out to word boundaries. \w is too narrow: it excludes the hyphen in
-    // "well-known" and every accented letter, so a word containing either would
-    // expand to nothing.
+    const text = $from.parent.textContent;
     const isWord = (ch) => !!ch && /[\p{L}\p{N}_'-]/u.test(ch);
-    if (!text.length) return toggleMark(markType)(state, dispatch, view);
 
-    // A cursor at the end of a word belongs to that word, which is where it
-    // lands after typing. Without this, clicking Bold immediately after a word
-    // does nothing, which is the same complaint one position over.
+    // The run of word characters around the caret. When the caret sits between
+    // two characters, prefer the one it follows: after typing a word that is
+    // where it lands, and clicking Bold there should affect that word rather
+    // than the space or the word after it.
     let start = offset;
     let end = offset;
-    if (!isWord(text[offset]) && offset > 0 && isWord(text[offset - 1])) {
-      start = offset - 1;
-      end = offset;
+    if (isWord(text[offset - 1])) {
+      while (start > 0 && isWord(text[start - 1])) start--;
+      while (end < text.length && isWord(text[end])) end++;
+    } else if (isWord(text[offset])) {
+      while (end < text.length && isWord(text[end])) end++;
     }
-    while (start > 0 && isWord(text[start - 1])) start--;
-    while (end < text.length && isWord(text[end])) end++;
 
+    // Nothing to widen to: an empty paragraph, or a caret between two
+    // non-word characters such as a space. Fall back rather than guessing.
     if (start === end) return toggleMark(markType)(state, dispatch, view);
 
     const base = from - offset;
-    const tr = state.tr.setSelection(
-      state.selection.constructor.create(state.doc, base + start, base + end)
+    const widened = state.apply(
+      state.tr.setSelection(
+        state.selection.constructor.create(state.doc, base + start, base + end)
+      )
     );
     if (dispatch) {
-      dispatch(tr);
-      // Run the toggle against the widened selection, on the updated state.
-      const widened = state.apply(tr);
       toggleMark(markType)(widened, view.dispatch, view);
+      // Put the caret back where the person left it. Widening the selection
+      // moved it, and leaving it moved is how the button ended up still lit:
+      // the caret landed back inside the very text it had just unbolded, so
+      // the next click read as "already bold" and appeared to do nothing.
+      const settled = view.state.selection;
+      const back = Math.min(base + offset, view.state.doc.content.size);
+      view.dispatch(
+        view.state.tr.setSelection(
+          settled.constructor.create(view.state.doc, back, back)
+        )
+      );
     }
     return true;
   };

@@ -14,7 +14,7 @@ That is the entire integration. No bundler, no framework, no GPL, no licence
 key. The `<textarea>` stays in the DOM and stays in sync, so your existing form
 and server code are unchanged.
 
-One file, zero network requests, 198 browser tests.
+One file, zero network requests, 200 browser tests.
 
 > **No branding in this build.** This is the self-hosted core. It adds nothing
 > to your page: no badge, no backlink, no head comment. If you would rather not
@@ -598,7 +598,7 @@ published to npm yet**, so `npm install enterraedit` will not work.
 ```sh
 npm install
 npm run build     # -> dist/enterraedit.min.js (single file)
-npm test          # image check, CSP hash, 198 assertions in a browser
+npm test          # image check, CSP hash, 200 assertions in a browser
 ```
 
 To look at it, just open `demo/index.html` in a browser. No server needed: the
