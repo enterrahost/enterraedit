@@ -773,6 +773,82 @@ check('falling back to the OS when the page declares nothing',
 await htp.close();
 fs.unlinkSync(hostThemeHtml);
 
+/* ---------- 13b7. Enter ----------
+ * Reported from the toolbox: typing worked but Enter did nothing, so a message
+ * could only ever be one paragraph. Two separate faults, both about keymap
+ * order rather than about a missing command.
+ */
+
+const enterHtml = path.join(__dirname, '_en.html');
+fs.writeFileSync(enterHtml, `<!DOCTYPE html><html><body>
+  <textarea id="en" data-enterraedit data-mode="standard"><p></p></textarea>
+  <script src="dist/enterraedit.min.js"><\/script></body></html>`);
+const enp = await browser.newPage();
+await enp.goto('file://' + enterHtml, { waitUntil: 'networkidle0' });
+await enp.waitForSelector('.ee-editor');
+
+const enSet = async (html) => {
+  await enp.evaluate((h) => {
+    const ed = window.EnterraEdit.getInstance(document.getElementById('en'));
+    ed.setHTML(h);
+    ed.view.focus();
+    // Caret at the end of the text, where a person about to press Enter would
+    // be. For <p>a</p> the valid positions are 0 before the block, 1 before the
+    // text, 2 after it and 3 after the block, so the end of the text is
+    // content.size - 1. Using -2 put the caret before the first character and
+    // the typed text landed in front of it.
+    const end = ed.view.state.doc.content.size - 1;
+    ed.view.dispatch(ed.view.state.tr.setSelection(
+      ed.view.state.selection.constructor.create(ed.view.state.doc, end, end)
+    ));
+  }, html);
+  await new Promise((r) => setTimeout(r, 150));
+};
+
+const enHtml = () => enp.evaluate(() =>
+  window.EnterraEdit.getInstance(document.getElementById('en')).getHTML());
+
+await enSet('<p>a</p>');
+await enp.keyboard.press('Enter');
+await enp.keyboard.type('b');
+await new Promise((r) => setTimeout(r, 200));
+const twoParas = await enHtml();
+check('Enter starts a new paragraph',
+  twoParas === '<p>a</p><p>b</p>', twoParas);
+
+await enSet('<p>a</p>');
+await enp.keyboard.down('Shift');
+await enp.keyboard.press('Enter');
+await enp.keyboard.up('Shift');
+await enp.keyboard.type('b');
+await new Promise((r) => setTimeout(r, 200));
+const withBreak = await enHtml();
+check('Shift+Enter breaks the line inside the same block',
+  withBreak === '<p>a<br>b</p>', withBreak);
+
+await enSet('<ul><li><p>one</p></li></ul>');
+// The generic end-of-document position sits after the list, outside any item,
+// so Enter there is an ordinary paragraph split. A person pressing Enter to
+// add a bullet has the caret inside the item, which is what this sets.
+await enp.evaluate(() => {
+  const ed = window.EnterraEdit.getInstance(document.getElementById('en'));
+  const pos = 4;   // inside the first list item's paragraph, after "one"
+  ed.view.dispatch(ed.view.state.tr.setSelection(
+    ed.view.state.selection.constructor.create(ed.view.state.doc, pos, pos)
+  ));
+});
+await new Promise((r) => setTimeout(r, 100));
+await enp.keyboard.press('Enter');
+await enp.keyboard.type('two');
+await new Promise((r) => setTimeout(r, 200));
+const twoItems = await enHtml();
+check('Enter in a list starts a new item, not a paragraph in the same one',
+  twoItems.includes('</li><li>') && (twoItems.match(/<li>/g) || []).length === 2,
+  twoItems);
+
+await enp.close();
+fs.unlinkSync(enterHtml);
+
 /* ---------- 13c. theming ---------- */
 
 const themeInfo = await page.evaluate(() => {

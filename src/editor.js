@@ -20,7 +20,8 @@ import {
   toggleMark,
   setBlockType,
   chainCommands,
-  exitCode
+  exitCode,
+  splitBlock
 } from 'prosemirror-commands';
 import {
   wrapInList,
@@ -238,6 +239,28 @@ function insertRule(state, dispatch) {
 
 // Re-exported so existing consumers importing it from the entry point still work.
 export { sanitizeUrl, sanitizeImageSrc };
+
+/**
+ * Shift+Enter: a line break inside the current block, not a new block.
+ *
+ * The installed prosemirror-commands does not export insertLineBreak, so this
+ * is the documented pattern written out. It only applies where a hard_break is
+ * allowed and the selection is a plain cursor; anywhere else it returns false
+ * and the next command in the chain gets its turn.
+ */
+function insertLineBreak(state, dispatch) {
+  const { hard_break } = state.schema.nodes;
+  if (!hard_break) return false;
+  const { $from, empty } = state.selection;
+  if (!empty || $from.parent.type === state.schema.nodes.code_block) return false;
+  // Only where the node will actually be accepted. Asking the schema rather
+  // than listing the node types means a custom schema works unchanged.
+  if (!$from.parent.canReplaceWith($from.index(), $from.index(), hard_break)) {
+    return false;
+  }
+  if (dispatch) dispatch(state.tr.replaceSelectionWith(hard_break.create()).scrollIntoView());
+  return true;
+}
 
 export class EnterraEdit {
   constructor(options = {}) {
@@ -613,22 +636,29 @@ export class EnterraEdit {
           this._promptLink();
           return true;
         },
-        'Mod-Enter': exitCode,
-        Enter: chainCommands(exitCode)
+        'Mod-Enter': exitCode
       }),
-      // Enter inside a list item should split; this is the one list behaviour
-      // worth wiring explicitly.
+      /* Enter, in the order the cases have to be tried.
+       *
+       * ProseMirror runs keymaps in order and the first handler returning true
+       * wins, so these cannot be merged carelessly. The list case has to come
+       * before the paragraph case, or Enter inside a list item is handled as an
+       * ordinary split and produces a second paragraph inside the same item
+       * instead of a new item.
+       *
+       * Within the chain: exitCode only acts in a code block and returns false
+       * elsewhere, splitListItem only in a list, and splitBlock and the newline
+       * case cover the rest. exitCode first so Enter leaves a code block rather
+       * than inserting a blank line inside it.
+       */
       keymap({
-        Enter: (state, dispatch) => {
-          const { $from, empty } = state.selection;
-          if (!empty) return false;
-          for (let d = $from.depth; d > 0; d--) {
-            if ($from.node(d).type === s.nodes.list_item) {
-              return splitListItem(s.nodes.list_item)(state, dispatch);
-            }
-          }
-          return false;
-        },
+        Enter: chainCommands(
+          exitCode,
+          splitListItem(s.nodes.list_item),
+          splitBlock,
+          insertLineBreak
+        ),
+        'Shift-Enter': insertLineBreak,
         // Inside a table, Tab belongs to the table. Elsewhere it indents a
         // list item, which is the existing behaviour.
         Tab: (state, dispatch) => {
