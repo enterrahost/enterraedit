@@ -88,6 +88,31 @@ const instances = [];
  * back to toggleMark when there is no word to expand to, such as an empty
  * paragraph or a cursor between two marks.
  */
+/**
+ * Whether a mark should show as active for the current selection.
+ *
+ * storedMarks matter and are easy to forget. With a cursor in plain text,
+ * toggling a mark does not change the document at all: it arms the mark for
+ * whatever is typed next, and ProseMirror keeps that in storedMarks. Reading
+ * only the marks at the cursor therefore reports "off" for a mark that is
+ * definitely on, and the button sits there unlit while the next word typed
+ * comes out bold.
+ *
+ * That is worse than a cosmetic problem. A person sees the click do nothing,
+ * clicks again to make it work, and that second click disarms the mark they
+ * had just set. The control and the document end up arguing with each other,
+ * which is exactly the "I cannot deselect it" report.
+ *
+ * Marks at the cursor are the right answer only when nothing is stored.
+ */
+function markIsActive(state, markType) {
+  if (!markType) return false;
+  const { from, to, empty } = state.selection;
+  if (!empty) return state.doc.rangeHasMark(from, to, markType);
+  const marks = state.storedMarks || state.selection.$from.marks();
+  return !!markType.isInSet(marks);
+}
+
 function toggleMarkAtWord(markType) {
   return (state, dispatch, view) => {
     const { empty, $from, from } = state.selection;
@@ -145,25 +170,25 @@ function toolbarFor(lang) {
       key: 'bold',
       icon: ICONS.bold,
       run: toggleMarkAtWord(s.marks.strong),
-      isActive: (state) => !!s.marks.strong.isInSet(state.styles ? [] : state.selection.$from.marks())
+      isActive: (state) => markIsActive(state, s.marks.strong)
     },
     {
       key: 'italic',
       icon: ICONS.italic,
       run: toggleMarkAtWord(s.marks.em),
-      isActive: (state) => !!s.marks.em.isInSet(state.selection.$from.marks())
+      isActive: (state) => markIsActive(state, s.marks.em)
     },
     {
       key: 'underline',
       icon: ICONS.underline,
       run: toggleMarkAtWord(s.marks.underline),
-      isActive: (state) => !!s.marks.underline.isInSet(state.selection.$from.marks())
+      isActive: (state) => markIsActive(state, s.marks.underline)
     },
     {
       key: 'strike',
       icon: ICONS.strike,
       run: toggleMarkAtWord(s.marks.strikethrough),
-      isActive: (state) => !!s.marks.strikethrough.isInSet(state.selection.$from.marks())
+      isActive: (state) => markIsActive(state, s.marks.strikethrough)
     },
     { type: 'sep' },
     {

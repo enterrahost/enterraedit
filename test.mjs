@@ -941,6 +941,50 @@ check('and the caret stays where the person left it',
   cycle.every((c) => c.from === 10),
   cycle.map((c) => c.from).join(', '));
 
+// The indicator must agree with what will actually be applied. With a cursor
+// in plain text, toggling a mark stores it rather than changing the document
+// when there is no word to widen to, so reading only the marks at the cursor
+// reported "off" for a mark that was on. The click looked like it had done
+// nothing, and clicking again to make it work disarmed it: the control and the
+// document argued with each other.
+await mkSet('<p>Hello </p>', 6, null);
+await mkClick('Bold');
+await new Promise((r) => setTimeout(r, 200));
+const wordBolded = await mkp.evaluate(() => ({
+  btn: document.querySelector('.ee-btn[title="Bold"]').classList.contains('is-active'),
+  html: window.EnterraEdit.getInstance(document.getElementById('mk')).getHTML()
+}));
+check('the button agrees with the mark the click applied',
+  wordBolded.btn === true && /<strong>Hello<\/strong>/.test(wordBolded.html),
+  `button=${wordBolded.btn} ${wordBolded.html}`);
+
+// Clicking again must clear both, which is the half that felt stuck.
+await mkClick('Bold');
+await new Promise((r) => setTimeout(r, 200));
+const cleared = await mkp.evaluate(() => ({
+  btn: document.querySelector('.ee-btn[title="Bold"]').classList.contains('is-active'),
+  html: window.EnterraEdit.getInstance(document.getElementById('mk')).getHTML()
+}));
+check('and clicking again clears both the button and the mark',
+  cleared.btn === false && !/<strong>Hello/.test(cleared.html),
+  `button=${cleared.btn} ${cleared.html}`);
+
+// A cursor on whitespace with no word to widen to stores the mark instead, and
+// the button has to show that too or the click looks like it did nothing.
+await mkSet('<p>a b</p>', 2, null);
+await mkClick('Bold');
+await new Promise((r) => setTimeout(r, 200));
+const armed = await mkp.evaluate(() => {
+  const ed = window.EnterraEdit.getInstance(document.getElementById('mk'));
+  return {
+    btn: document.querySelector('.ee-btn[title="Bold"]').classList.contains('is-active'),
+    stored: ed.view.state.storedMarks ? ed.view.state.storedMarks.map((m) => m.type.name) : []
+  };
+});
+check('a stored mark lights the button rather than looking like a no-op',
+  armed.btn === true,
+  `button=${armed.btn} stored=[${armed.stored}]`);
+
 // An empty paragraph has no word to expand to, and must not throw.
 await mkSet('<p></p>', 1, null);
 await mkClick('Bold');
