@@ -563,6 +563,41 @@ for (const tag of ['h2', 'p', 'li']) {
 await blp.close();
 fs.unlinkSync(bleedHtml);
 
+/* ---------- 13b3. native UI follows the editor theme ----------
+ * Button tooltips are native title tooltips, which the browser paints from the
+ * OS colour scheme rather than from CSS. A dark editor opened under a light OS
+ * therefore showed a white tooltip on a white button: unreadable, and nothing
+ * in the stylesheet could have fixed it. color-scheme is the only lever.
+ */
+
+const csProbe = async (theme) => {
+  const pr = await browser.newPage();
+  const f = path.join(__dirname, '_cs.html');
+  fs.writeFileSync(f, `<!DOCTYPE html><html><body>
+    <textarea data-enterraedit data-mode="comment" data-theme="${theme}"><p>x</p></textarea>
+    <script src="dist/enterraedit.min.js"><\/script></body></html>`);
+  await pr.goto('file://' + f, { waitUntil: 'networkidle0' });
+  await pr.waitForSelector('.ee-editor');
+  const out = await pr.evaluate(() => {
+    const root = document.querySelector('.ee-root');
+    return {
+      inline: root.style.getPropertyValue('color-scheme').trim(),
+      computed: getComputedStyle(root).colorScheme.trim(),
+      theme: root.getAttribute('data-ee-theme')
+    };
+  });
+  await pr.close();
+  fs.unlinkSync(f);
+  return out;
+};
+
+for (const theme of ['light', 'dark']) {
+  const r = await csProbe(theme);
+  check(`color-scheme follows the ${theme} theme, so native tooltips match`,
+    r.computed === theme,
+    `theme=${r.theme} color-scheme=${r.computed}`);
+}
+
 /* ---------- 13c. theming ---------- */
 
 const themeInfo = await page.evaluate(() => {

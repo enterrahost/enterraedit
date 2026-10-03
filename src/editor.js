@@ -348,7 +348,18 @@ export class EnterraEdit {
       this.root.style.setProperty(prop, value);
     }
     // Let the host style around the theme if it wants to.
-    this.root.classList.toggle('ee-theme-dark', this.getEffectiveTheme() === 'dark');
+    const effective = this.getEffectiveTheme();
+    this.root.classList.toggle('ee-theme-dark', effective === 'dark');
+
+    // Tell the browser which way round the editor is, so the interface it draws
+    // itself matches. Button tooltips are the visible case: a native title
+    // tooltip is painted from the OS colour scheme, not from CSS, so on a dark
+    // editor under a light OS it came out white on white and the label was
+    // unreadable. This also corrects scrollbars and the caret.
+    this.root.style.setProperty(
+      'color-scheme',
+      effective === 'dark' || effective === 'light' ? effective : 'light dark'
+    );
   }
 
   /**
