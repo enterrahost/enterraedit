@@ -514,6 +514,55 @@ check('surface contrast checks produced no page errors',
 await scp.close();
 fs.unlinkSync(scHtml);
 
+/* ---------- 13b2. host page styles must not bleed in ----------
+ * A contenteditable creates no boundary, so a host page's `h2 { color }` rule
+ * reaches straight into the editor. On the product page, which is dark, that
+ * painted the editor's headings grey on the editor's own white background:
+ * 2.5:1, and the editor looked broken rather than merely low contrast.
+ *
+ * The surface check above passes with content that has no colour of its own,
+ * which is exactly why this asserts the elements INSIDE the editor.
+ */
+
+const bleedHtml = path.join(__dirname, '_bleed.html');
+fs.writeFileSync(bleedHtml, `<!DOCTYPE html><html><head><style>
+  body { background: #050505; color: #a3a3a3; }
+  h1, h2, h3 { color: #a3a3a3; }
+  p, li, td { color: #d4d4d8; }
+</style></head><body>
+  <textarea id="bl" data-enterraedit data-mode="standard" data-theme="light">
+    <h2>Heading</h2><p>Paragraph.</p><ul><li>Item</li></ul>
+  </textarea>
+  <script src="dist/enterraedit.min.js"><\/script></body></html>`);
+
+const blp = await browser.newPage();
+await blp.goto('file://' + bleedHtml, { waitUntil: 'networkidle0' });
+await blp.waitForSelector('.ee-editor');
+
+const bleed = await blp.evaluate(() => {
+  const ed = document.querySelector('.ee-editor');
+  const colour = (sel) => {
+    const el = ed.querySelector(sel);
+    return el ? getComputedStyle(el).color : null;
+  };
+  return {
+    bg: getComputedStyle(ed).backgroundColor,
+    h2: colour('h2'),
+    p: colour('p'),
+    li: colour('li'),
+    td: colour('td')
+  };
+});
+
+for (const tag of ['h2', 'p', 'li']) {
+  check(`editor ${tag} keeps its own colour against host styles`,
+    bleed[tag] !== null && contrast(bleed[tag], bleed.bg) >= 4.5,
+    `${bleed[tag]} on ${bleed.bg} = ${bleed[tag] ? contrast(bleed[tag], bleed.bg).toFixed(2) : 'n/a'}:1`);
+}
+
+await blp.close();
+fs.unlinkSync(bleedHtml);
+
 /* ---------- 13c. theming ---------- */
 
 const themeInfo = await page.evaluate(() => {

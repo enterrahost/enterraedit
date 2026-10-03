@@ -142,6 +142,33 @@ export const STYLES = `
 
 .ee-editor > * + * { margin-block-start: 0.75em; }
 
+/* The content needs its own colour, not the one it inherits.
+ *
+ * A host page almost always styles h2 and p, and those rules reach straight
+ * into the editor because contenteditable does not create a boundary. On the
+ * product page, which is dark, its h2 rule painted the editor's headings grey
+ * on the editor's own white background: measured at 2.5:1, and invisible
+ * enough that the editor simply looked broken.
+ *
+ * Setting colour here rather than relying on inheritance means the editor
+ * looks the same wherever it is dropped, which is the whole premise of a
+ * drop-in. Specificity is also deliberately higher than a bare element
+ * selector, so a plain p { color: ... } on the host page loses. */
+.ee-editor,
+.ee-editor p,
+.ee-editor li,
+.ee-editor h1,
+.ee-editor h2,
+.ee-editor h3,
+.ee-editor h4,
+.ee-editor h5,
+.ee-editor h6,
+.ee-editor blockquote,
+.ee-editor td,
+.ee-editor th {
+  color: var(--ee-fg);
+}
+
 .ee-editor h1 { font-size: 1.6em; font-weight: 700; }
 .ee-editor h2 { font-size: 1.35em; font-weight: 700; }
 .ee-editor h3 { font-size: 1.15em; font-weight: 600; }

@@ -28,6 +28,11 @@ const dev = process.argv.includes('--dev');
 
 const outfile = path.join(root, 'dist', dev ? 'enterraedit.js' : 'enterraedit.min.js');
 
+// esbuild will not create missing directories, so a clean checkout, or anyone
+// who deleted dist/ to force a rebuild, gets a failure rather than a build.
+// dist/ is gitignored, which makes that the normal case on a fresh clone.
+fs.mkdirSync(path.dirname(outfile), { recursive: true });
+
 const NOTICE = `/*!
  * EnterraEdit, MIT licensed. https://enterrahost.com/enterraedit
  *
