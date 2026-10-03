@@ -211,6 +211,55 @@ The editor needs no `script-src` relaxation. It does not use `eval`,
 requests, loads no fonts or images of its own and uses no `connect-src`, so
 `default-src 'self'` is otherwise sufficient.
 
+### Host page styles reaching into the editor
+
+A `contenteditable` creates no boundary. Any rule your page applies to `h2`,
+`p`, `li` or `button` also applies to the elements inside the editor, and a
+rule marked `!important` wins on any specificity the editor could use.
+
+This is not hypothetical. It is how the editor spent an afternoon looking
+broken on our own product page, where the site stylesheet contained:
+
+```css
+button:hover { background-color: var(--color-secondary) !important; }
+```
+
+Every toolbar button became a solid block on hover with the icon nearly
+invisible inside it. In dark mode the colour happened to be dark enough to
+pass unnoticed; in light mode it was near-white against a dark toolbar.
+
+**If you style `button` globally, exempt the editor's controls.** The same
+treatment any component needs when it brings its own look:
+
+```css
+.ee-btn:hover,
+.ee-btn.is-active,
+.ee-dialog-close:hover {
+  background-color: var(--ee-active) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+```
+
+`--ee-active` is the editor's own hover token and carries the current theme, so
+this only has to stop your rule from applying rather than supply a colour.
+
+The same applies to headings and paragraphs. The editor sets `color` on its
+content precisely so a host page's typography colours do not leak in, but it
+cannot beat `!important` there either:
+
+```css
+/* Only needed if you set these with !important. */
+.ee-editor h1, .ee-editor h2, .ee-editor h3,
+.ee-editor p, .ee-editor li, .ee-editor td {
+  color: var(--ee-fg) !important;
+}
+```
+
+If you would rather not write any of this, scope your global rules instead of
+using `!important` broadly. A rule that does not say `!important` loses to the
+editor's own selectors automatically.
+
 ### Editor modes
 
 A contact form does not need headings and code blocks. `mode` selects a toolbar
@@ -219,7 +268,7 @@ without naming every button:
 | Mode | Buttons | For |
 | --- | --- | --- |
 | `comment` | 8 | replies, ticket updates, contact forms |
-| `standard` | 17 | article or page body |
+| `standard` | 15 | article or page body |
 | `full` | 19 | everything, including images and tables |
 
 ```html
