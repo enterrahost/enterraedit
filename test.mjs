@@ -1070,6 +1070,110 @@ for (const r of selRatios) {
 await sep.close();
 fs.unlinkSync(selHtml);
 
+/* ---------- 13b10. lists ----------
+ * Reported from the toolbox: bullet points could not be deleted and numbered
+ * lists were a mess. baseKeymap was never installed, and its Backspace is what
+ * lifts an item out of a list, so an item could not be removed at all.
+ *
+ * The order matters and is the part worth testing. baseKeymap also binds
+ * Enter, to a chain ending in splitBlock, so placing it before the Enter chain
+ * made Enter split the paragraph inside a list item instead of starting a new
+ * one: one bullet holding several paragraphs, and a numbered list drawing its
+ * number once while the paragraphs stacked beneath it.
+ */
+
+const listHtml = path.join(__dirname, '_ls.html');
+fs.writeFileSync(listHtml, `<!DOCTYPE html><html><body>
+  <textarea id="ls" data-enterraedit
+    data-toolbar-keys="bold,italic,bulletList,orderedList"><p></p></textarea>
+  <script src="dist/enterraedit.min.js"><\/script></body></html>`);
+const lsp = await browser.newPage();
+await lsp.goto('file://' + listHtml, { waitUntil: 'networkidle0' });
+await lsp.waitForSelector('.ee-editor');
+
+const lsHtml = () => lsp.evaluate(() =>
+  window.EnterraEdit.getInstance(document.getElementById('ls')).getHTML());
+const lsReset = async () => {
+  await lsp.evaluate(() => {
+    const ed = window.EnterraEdit.getInstance(document.getElementById('ls'));
+    ed.setHTML('<p></p>');
+    ed.view.focus();
+    ed.view.dispatch(ed.view.state.tr.setSelection(
+      ed.view.state.selection.constructor.create(ed.view.state.doc, 1, 1)));
+  });
+  await new Promise((r) => setTimeout(r, 120));
+};
+const lsClick = (title) => lsp.evaluate((t) => {
+  document.querySelector(`.ee-btn[title="${t}"]`)
+    .dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+}, title);
+
+// Typing a list must produce items, not one item with several paragraphs.
+await lsReset();
+await lsClick('Bulleted list');
+await lsp.keyboard.type('one');
+await lsp.keyboard.press('Enter');
+await lsp.keyboard.type('two');
+await lsp.keyboard.press('Enter');
+await lsp.keyboard.type('three');
+await new Promise((r) => setTimeout(r, 350));
+const bullets = await lsHtml();
+check('Enter in a bullet list starts a new item',
+  bullets === '<ul><li><p>one</p></li><li><p>two</p></li><li><p>three</p></li></ul>',
+  bullets);
+
+// And the same for a numbered list, which is what looked worst.
+await lsReset();
+await lsClick('Numbered list');
+await lsp.keyboard.type('first');
+await lsp.keyboard.press('Enter');
+await lsp.keyboard.type('second');
+await new Promise((r) => setTimeout(r, 350));
+const numbered = await lsHtml();
+check('Enter in a numbered list starts a new item',
+  numbered === '<ol><li><p>first</p></li><li><p>second</p></li></ol>',
+  numbered);
+
+// Backspace at the start of an item must reach the previous one, which is what
+// baseKeymap provides and the browser cannot do alone.
+await lsp.evaluate(() => {
+  const ed = window.EnterraEdit.getInstance(document.getElementById('ls'));
+  ed.setHTML('<ul><li><p>one</p></li><li><p>two</p></li></ul>');
+  ed.view.focus();
+  // Caret at the start of "two", which is the position that was stuck.
+  let pos = null;
+  ed.view.state.doc.descendants((n, p) => { if (n.isText && n.text === 'two') pos = p; });
+  ed.view.dispatch(ed.view.state.tr.setSelection(
+    ed.view.state.selection.constructor.create(ed.view.state.doc, pos, pos)));
+});
+await new Promise((r) => setTimeout(r, 150));
+await lsp.keyboard.press('Backspace');
+await new Promise((r) => setTimeout(r, 250));
+const merged = await lsHtml();
+check('Backspace at the start of an item reaches the previous one',
+  merged !== '<ul><li><p>one</p></li><li><p>two</p></li></ul>',
+  merged);
+
+// Leaving a list with Backspace from a single item.
+await lsp.evaluate(() => {
+  const ed = window.EnterraEdit.getInstance(document.getElementById('ls'));
+  ed.setHTML('<p>before</p><ul><li><p>one</p></li></ul>');
+  ed.view.focus();
+  let pos = null;
+  ed.view.state.doc.descendants((n, p) => { if (n.isText && n.text === 'one') pos = p; });
+  ed.view.dispatch(ed.view.state.tr.setSelection(
+    ed.view.state.selection.constructor.create(ed.view.state.doc, pos, pos)));
+});
+await new Promise((r) => setTimeout(r, 150));
+await lsp.keyboard.press('Backspace');
+await new Promise((r) => setTimeout(r, 250));
+const lifted = await lsHtml();
+check('Backspace lifts an item out of the list entirely',
+  lifted === '<p>before</p><p>one</p>', lifted);
+
+await lsp.close();
+fs.unlinkSync(listHtml);
+
 /* ---------- 13c. theming ---------- */
 
 const themeInfo = await page.evaluate(() => {

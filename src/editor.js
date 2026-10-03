@@ -21,7 +21,9 @@ import {
   setBlockType,
   chainCommands,
   exitCode,
-  splitBlock
+  splitBlock,
+  baseKeymap,
+  liftEmptyBlock
 } from 'prosemirror-commands';
 import {
   wrapInList,
@@ -745,6 +747,10 @@ export class EnterraEdit {
       keymap({
         Enter: chainCommands(
           exitCode,
+          // An empty item is the way out of a list, and it has to be tested
+          // before splitListItem or pressing Enter twice just adds another
+          // empty item for ever.
+          liftEmptyBlock,
           splitListItem(s.nodes.list_item),
           splitBlock,
           insertLineBreak
@@ -760,7 +766,22 @@ export class EnterraEdit {
           if (isInTable(state)) return goToNextCell(-1)(state, dispatch);
           return liftListItem(s.nodes.list_item)(state, dispatch);
         }
-      })
+      }),
+
+      /* The standard editing keys, last.
+       *
+       * baseKeymap was missing entirely, which is why Backspace could not lift
+       * an item out of a list: the browser deletes plain text on its own and
+       * gives up at every block boundary, which is what baseKeymap covers.
+       *
+       * It has to come AFTER the Enter chain, not before. baseKeymap binds
+       * Enter too, to a chain ending in splitBlock, and ProseMirror runs
+       * keymaps in order with the first match winning. Placed first it split
+       * the paragraph inside a list item rather than starting a new item, so
+       * Enter produced one bullet holding two paragraphs and a numbered list
+       * stacked its numbers beside stacked paragraphs.
+       */
+      keymap(baseKeymap),
     ];
   }
 
