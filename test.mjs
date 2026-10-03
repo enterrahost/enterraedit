@@ -442,6 +442,78 @@ check('selection survives toolbar mousedown (drop-in failure mode)',
  Object.values(markResults).filter((v) => v === true).length === 4,
  ['bold','italic','underline','strike'].map(k => k + '=' + markResults[k]).join(' '));
 
+/* ---------- 13b. surface contrast on a host page ----------
+ * A light editor on a dark page used to render near-black text on near-black:
+ * .ee-root carried the background but .ee-editor did not, so the surface was
+ * transparent and picked up the host page's colour instead. The existing
+ * contrast checks read .ee-root and so passed while the text was unreadable.
+ *
+ * These assert the surface itself, in both themes, over a host page that
+ * disagrees with the editor.
+ */
+
+const scHtml = path.join(__dirname, '_surface.html');
+fs.writeFileSync(scHtml, `<!DOCTYPE html><html><head><style>
+  body { background: #0a0a0a; color: #eeeeee; }
+</style></head><body>
+  <textarea id="sc" data-enterraedit data-mode="standard" data-theme="light">
+    <h2>Heading</h2><p>Body text.</p>
+  </textarea>
+  <script src="dist/enterraedit.min.js"><\/script></body></html>`);
+
+const scp = await browser.newPage();
+const scErrors = [];
+scp.on('pageerror', (e) => scErrors.push(e.message));
+await scp.goto('file://' + scHtml, { waitUntil: 'networkidle0' });
+await scp.waitForSelector('.ee-editor');
+
+// Relative luminance, per WCAG, so the ratio below means something.
+const luminance = (rgb) => {
+  const [r, g, b] = rgb.match(/\d+/g).slice(0, 3).map(Number).map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contrast = (a, b) => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+
+const surface = await scp.evaluate(() => {
+  const el = document.querySelector('.ee-editor');
+  const cs = getComputedStyle(el);
+  return { bg: cs.backgroundColor, color: cs.color };
+});
+
+check('the editing surface is opaque, not transparent',
+  !/rgba\(.*,\s*0\)$/.test(surface.bg) && surface.bg !== 'transparent',
+  surface.bg);
+check('light editor text is readable on a dark host page',
+  contrast(surface.color, surface.bg) >= 4.5,
+  `${contrast(surface.color, surface.bg).toFixed(2)}:1 (${surface.color} on ${surface.bg})`);
+
+// And the same in dark theme over a light host page, which is the mirror case.
+await scp.evaluate(() => {
+  document.body.style.background = '#ffffff';
+  document.body.style.color = '#111111';
+  const ed = window.EnterraEdit.getInstance(document.getElementById('sc'));
+  ed.setTheme('dark');
+});
+await new Promise((r) => setTimeout(r, 200));
+const darkSurface = await scp.evaluate(() => {
+  const cs = getComputedStyle(document.querySelector('.ee-editor'));
+  return { bg: cs.backgroundColor, color: cs.color };
+});
+check('dark editor text is readable on a light host page',
+  contrast(darkSurface.color, darkSurface.bg) >= 4.5,
+  `${contrast(darkSurface.color, darkSurface.bg).toFixed(2)}:1 (${darkSurface.color} on ${darkSurface.bg})`);
+
+check('surface contrast checks produced no page errors',
+  scErrors.length === 0, scErrors.slice(0, 2).join(' | ') || 'clean');
+await scp.close();
+fs.unlinkSync(scHtml);
+
 /* ---------- 13c. theming ---------- */
 
 const themeInfo = await page.evaluate(() => {

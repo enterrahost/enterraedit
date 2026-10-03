@@ -130,6 +130,12 @@ export const STYLES = `
   padding: 12px 14px;
   outline: none;
   line-height: 1.6;
+  /* The surface carries its own background rather than inheriting the one on
+     .ee-root. It was transparent, so wherever the editor theme and the host
+     page disagreed the text sat on the page colour instead: light theme on a
+     dark site rendered near-black text on near-black. */
+  background: var(--ee-bg);
+  color: var(--ee-fg);
 }
 
 .ee-editor:focus-visible { outline: 2px solid var(--ee-focus); outline-offset: -2px; }
