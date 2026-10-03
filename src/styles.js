@@ -72,8 +72,15 @@ export const STYLES = `
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 2px;
-  padding: 6px;
+  /* Column gap of 1px rather than 2. At 2px the standard mode came to 588px
+     against a 576px content box, so the last button wrapped and dragged a row
+     with it. The separators already provide visual division, which is what the
+     wider gap was standing in for. */
+  column-gap: 1px;
+  row-gap: 3px;
+  /* 5px rather than 6px: enough that the first and last buttons do not touch
+     the border, without costing a column of width. */
+  padding: 5px;
   border-block-end: 1px solid var(--ee-border);
   background: var(--ee-toolbar-bg);
 }
@@ -109,10 +116,16 @@ export const STYLES = `
 }
 
 .ee-sep {
+  /* flex: 0 0 auto keeps the 1px width from being squeezed, and the 3px
+     margin is the whole of the separation. It used to be 4px, which together
+     with the toolbar's own gap came to 10px per separator and 40px across the
+     four in standard mode. That was enough to push them past the last button
+     and onto a second line, where four invisible dividers took a row. */
+  flex: 0 0 auto;
   inline-size: 1px;
   block-size: 20px;
   background: var(--ee-border);
-  margin-inline: 4px;
+  margin-inline: 3px;
 }
 
 /* ---------- editing surface ---------- */
