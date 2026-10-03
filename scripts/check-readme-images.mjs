@@ -10,6 +10,7 @@
  */
 
 import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -52,7 +53,26 @@ if (fs.existsSync(shotsDir)) {
  for (const name of fs.readdirSync(shotsDir)) {
  const rel = `shots/${name}`;
  if (!referencedLocally.has(rel)) {
- console.warn(`UNUSED ${rel}, present but not referenced in README.md`);
+ // A warning rather than a failure: a screenshot is often captured
+ // before the README links it. But three were committed by accident while
+ // fixing other things, so once one is actually tracked it is an error.
+ let strayTracked = false;
+ try {
+   execFileSync('git', ['ls-files', '--error-unmatch', rel], {
+     cwd: root,
+     stdio: 'ignore'
+   });
+   strayTracked = true;
+ } catch {
+   strayTracked = false;
+ }
+ if (strayTracked) {
+   console.error(`STRAY    ${rel} is committed but nothing references it.`);
+   console.error('         Remove it, or link it from README.md.');
+   failed = true;
+ } else {
+   console.warn(`UNUSED ${rel}, present but not referenced in README.md`);
+ }
  }
  }
 }
