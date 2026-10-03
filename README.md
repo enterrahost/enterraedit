@@ -14,7 +14,7 @@ That is the entire integration. No bundler, no framework, no GPL, no licence
 key. The `<textarea>` stays in the DOM and stays in sync, so your existing form
 and server code are unchanged.
 
-One file, zero network requests, 168 browser tests.
+One file, zero network requests, 182 browser tests.
 
 > **No branding in this build.** This is the self-hosted core. It adds nothing
 > to your page: no badge, no backlink, no head comment. If you would rather not
@@ -133,10 +133,10 @@ easy to get wrong and are handled here:
 
 | | Original | EnterraEdit |
 | --- | --- | --- |
-| `aria-label` on buttons | **0 of 32** | 16 of 16 |
+| `aria-label` on buttons | **0 of 32** | 19 of 19 |
 | `role="toolbar"` | no | yes, with `aria-label` |
 | `role="textbox"` + `aria-multiline` | no | yes |
-| `aria-pressed` on toggles | no | 10 toggles |
+| `aria-pressed` on toggles | no | 12 toggles |
 | Arrow-key toolbar nav | no | WAI-ARIA roving tabindex |
 | Visible focus ring | no | `:focus-visible` |
 | Decorative icons hidden | no | `aria-hidden` |
@@ -145,7 +145,7 @@ easy to get wrong and are handled here:
 | Dark mode | no | `prefers-color-scheme` |
 
 The toolbar is a single tab stop with arrow-key navigation, so a keyboard user
-doesn't need 16 tab presses to get past it.
+doesn't need 19 tab presses to get past it.
 
 ### Security
 
@@ -262,14 +262,14 @@ editor's own selectors automatically.
 
 ### Editor modes
 
-A contact form does not need headings and code blocks. `mode` selects a toolbar
+A contact form does not need headings and lists. `mode` selects a toolbar
 without naming every button:
 
 | Mode | Buttons | For |
 | --- | --- | --- |
 | `comment` | 8 | replies, ticket updates, contact forms |
-| `standard` | 15 | article or page body |
-| `full` | 19 | everything, including images and tables |
+| `standard` | 15 | article or page body: adds headings, lists and quotes |
+| `full` | 19 | the above plus code blocks, rules, images and tables |
 
 ```html
 <textarea data-enterraedit data-mode="comment"></textarea>
@@ -551,9 +551,12 @@ restyle anything with ordinary CSS and no JS at all:
 enterraedit-core/
 ├── src/
 │ ├── editor.js drop-in layer, toolbar, form sync, public API
+│ ├── dialog.js the modal used by link, image and table
 │ ├── i18n.js string table + language resolution
 │ ├── icons.js inline SVG (replaces Font Awesome)
-│ ├── schema.js document model, validates link hrefs
+│ ├── images.js reading pasted and dropped files
+│ ├── modes.js button map, toolbar presets, key validation
+│ ├── schema.js document model, validates link and image URLs
 │ ├── url.js URL scheme allowlist
 │ ├── styles.js logical-property CSS, reduced-motion
 │ ├── themes.js 4 presets + accent derivation with contrast checking
@@ -562,11 +565,14 @@ enterraedit-core/
 │ ├── version.js GENERATED from package.json on prebuild
 │ └── index.js
 ├── scripts/
+│ ├── build.mjs esbuild + the licence notice, and a backtick guard
 │ ├── sync-version.mjs keeps version.js in step with package.json
-│ └── check-readme-images.mjs fails the build on a broken README image
-├── demo/index.html 10 sections: languages, RTL, themes, sizing, forms
+│ ├── check-readme-images.mjs fails the build on a broken image or a stray
+│ └── check-csp-hash.mjs fails when the documented CSP hash is stale
+├── demo/index.html 14 sections, every feature has a live example
 ├── dist/ built bundle, gitignored and built on publish
-├── test.mjs 100 real-browser assertions
+├── test.mjs real-browser assertions, run by npm test
+├── THIRD-PARTY.md ProseMirror's licence, since it ships in the bundle
 └── shots/ screenshots used by this README
 ```
 
@@ -578,7 +584,7 @@ published to npm yet**, so `npm install enterraedit` will not work.
 ```sh
 npm install
 npm run build     # -> dist/enterraedit.min.js (single file)
-npm test          # image check + 168 assertions in a real browser
+npm test          # image check, CSP hash, 182 assertions in a browser
 ```
 
 To look at it, just open `demo/index.html` in a browser. No server needed: the

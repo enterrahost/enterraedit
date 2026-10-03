@@ -82,13 +82,35 @@ if (fs.existsSync(shotsDir)) {
 // claim a number the tests do not produce.
 const testSrc = fs.readFileSync(path.join(root, 'test.mjs'), 'utf8');
 const assertions = (testSrc.match(/^\s*check\(/gm) || []).length;
-const claimed = [...text.matchAll(/(\d{2,4})\s+(?:browser tests|assertions)/g)]
+const claimed = [...text.matchAll(/(\d{2,4})\s+([a-z-]*\s*)(?:browser tests|assertions)/g)]
   .map((m) => Number(m[1]));
 
+// Run the suite and compare against what it actually reports, rather than
+// against the source count. The previous version only failed when the README
+// claimed MORE than the source defined, so a figure that had fallen behind
+// passed silently: the README sat at 168 for two commits while the suite ran
+// 182, and the same check let '100 real-browser assertions' through untouched.
+let actual = null;
+try {
+  const out = execFileSync('node', ['test.mjs'], {
+    cwd: root,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'ignore']
+  });
+  const m = out.match(/(\d+)\/\d+ passed/);
+  if (m) actual = Number(m[1]);
+} catch {
+  // A failing suite reports its own failure; this check only guards the README.
+}
+
 for (const n of claimed) {
-  // The static count includes checks inside loops, so allow the documented
-  // figure to be the runtime total rather than the source total.
-  if (n > assertions) {
+  if (actual !== null && n !== actual) {
+    console.error(
+      `STALE    README claims ${n} tests; the suite reports ${actual}.`
+    );
+    console.error('         Update every count, including the layout block.');
+    failed = true;
+  } else if (actual === null && n > assertions) {
     console.error(
       `STALE    README claims ${n} tests but test.mjs defines only ${assertions} check() calls`
     );

@@ -6,8 +6,8 @@
  * common cases, and an explicit list is available for anything else.
  *
  *   comment   short replies, ticket updates, contact forms
- *   standard  article or page body: adds structure and code
- *   full      everything the editor can do, including images and tables
+ *   standard  article or page body: adds headings, lists and quotes
+ *   full      the above plus code blocks, rules, images and tables
  *
  * A mode is only a default for which buttons appear. It never changes what the
  * document model will accept, so content pasted into a `comment` field is
