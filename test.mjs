@@ -849,6 +849,83 @@ check('Enter in a list starts a new item, not a paragraph in the same one',
 await enp.close();
 fs.unlinkSync(enterHtml);
 
+/* ---------- 13b8. inline marks with a cursor ----------
+ * Reported twice, from the toolbox and from the product page: with the caret
+ * inside bold text, clicking Bold did nothing, so bold could not be removed.
+ *
+ * Plain toggleMark only sets storedMarks for a collapsed selection, which
+ * affects the next character typed and leaves the word alone. It also returns
+ * true, so the button looks like it worked.
+ */
+
+const markHtml = path.join(__dirname, '_mk.html');
+fs.writeFileSync(markHtml, `<!DOCTYPE html><html><body>
+  <textarea id="mk" data-enterraedit data-mode="standard"><p><strong>hello</strong> world here</p></textarea>
+  <script src="dist/enterraedit.min.js"><\/script></body></html>`);
+const mkp = await browser.newPage();
+await mkp.goto('file://' + markHtml, { waitUntil: 'networkidle0' });
+await mkp.waitForSelector('.ee-editor');
+
+const mkSet = async (html, from, to) => {
+  await mkp.evaluate((args) => {
+    const ed = window.EnterraEdit.getInstance(document.getElementById('mk'));
+    ed.setHTML(args.html);
+    const doc = ed.view.state.doc;
+    ed.view.dispatch(ed.view.state.tr.setSelection(
+      ed.view.state.selection.constructor.create(doc, args.from, args.to === null ? args.from : args.to)
+    ));
+  }, { html, from, to });
+  await new Promise((r) => setTimeout(r, 120));
+};
+const mkHtml = () => mkp.evaluate(() =>
+  window.EnterraEdit.getInstance(document.getElementById('mk')).getHTML());
+const mkClick = (title) => mkp.evaluate((t) => {
+  document.querySelector(`.ee-btn[title="${t}"]`)
+    .dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+}, title);
+
+// A cursor inside bold text: Bold must remove it from that word.
+await mkSet('<p><strong>hello</strong> world here</p>', 3, null);
+await mkClick('Bold');
+await new Promise((r) => setTimeout(r, 200));
+const unbolded = await mkHtml();
+check('a cursor inside bold text removes bold from the word',
+  unbolded === '<p>hello world here</p>', unbolded);
+
+// And a cursor in plain text must add it.
+await mkSet('<p>hello world here</p>', 10, null);
+await mkClick('Italic');
+await new Promise((r) => setTimeout(r, 200));
+const italicised = await mkHtml();
+check('a cursor in plain text applies the mark to the word',
+  italicised === '<p>hello <em>world</em> here</p>', italicised);
+
+// Toggling it off again must work, which is the half that was broken.
+await mkClick('Italic');
+await new Promise((r) => setTimeout(r, 200));
+const reverted = await mkHtml();
+check('and toggling it off again works',
+  reverted === '<p>hello world here</p>', reverted);
+
+// A real selection must still behave as a selection.
+await mkSet('<p>hello world here</p>', 1, 6);
+await mkClick('Bold');
+await new Promise((r) => setTimeout(r, 200));
+const selected = await mkHtml();
+check('a real selection still toggles across the selection',
+  selected === '<p><strong>hello</strong> world here</p>', selected);
+
+// An empty paragraph has no word to expand to, and must not throw.
+await mkSet('<p></p>', 1, null);
+await mkClick('Bold');
+await new Promise((r) => setTimeout(r, 200));
+const emptyDoc = await mkHtml();
+check('an empty paragraph does not throw',
+  emptyDoc === '<p></p>', emptyDoc);
+
+await mkp.close();
+fs.unlinkSync(markHtml);
+
 /* ---------- 13c. theming ---------- */
 
 const themeInfo = await page.evaluate(() => {

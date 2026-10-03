@@ -72,31 +72,92 @@ const instances = [];
  * from the same i18n key, so translation happens once.
  * ------------------------------------------------------------------ */
 
+/**
+ * Toggle a mark, applying it to the word under the cursor when nothing is
+ * selected.
+ *
+ * Plain toggleMark only sets storedMarks for a collapsed selection, which
+ * affects the next character typed and leaves the existing word alone. That is
+ * correct ProseMirror behaviour and useless as a button: a cursor inside bold
+ * text, clicking Bold, appears to do nothing at all. The command returns true,
+ * the document does not change, and the mark is still there, so it reads as a
+ * broken control rather than as a subtlety.
+ *
+ * Every editor a person has used resolves this the same way, by treating a
+ * cursor inside a word as a selection of that word. This does that, and falls
+ * back to toggleMark when there is no word to expand to, such as an empty
+ * paragraph or a cursor between two marks.
+ */
+function toggleMarkAtWord(markType) {
+  return (state, dispatch, view) => {
+    const { empty, $from, from } = state.selection;
+
+    // A real selection, or a cursor with nowhere to expand: leave it alone.
+    if (!empty || !markType) return toggleMark(markType)(state, dispatch, view);
+
+    const parent = $from.parent;
+    const offset = $from.parentOffset;
+    const text = parent.textContent;
+
+    // Walk out to word boundaries. \w is too narrow: it excludes the hyphen in
+    // "well-known" and every accented letter, so a word containing either would
+    // expand to nothing.
+    const isWord = (ch) => !!ch && /[\p{L}\p{N}_'-]/u.test(ch);
+    if (!text.length) return toggleMark(markType)(state, dispatch, view);
+
+    // A cursor at the end of a word belongs to that word, which is where it
+    // lands after typing. Without this, clicking Bold immediately after a word
+    // does nothing, which is the same complaint one position over.
+    let start = offset;
+    let end = offset;
+    if (!isWord(text[offset]) && offset > 0 && isWord(text[offset - 1])) {
+      start = offset - 1;
+      end = offset;
+    }
+    while (start > 0 && isWord(text[start - 1])) start--;
+    while (end < text.length && isWord(text[end])) end++;
+
+    if (start === end) return toggleMark(markType)(state, dispatch, view);
+
+    const base = from - offset;
+    const tr = state.tr.setSelection(
+      state.selection.constructor.create(state.doc, base + start, base + end)
+    );
+    if (dispatch) {
+      dispatch(tr);
+      // Run the toggle against the widened selection, on the updated state.
+      const widened = state.apply(tr);
+      toggleMark(markType)(widened, view.dispatch, view);
+    }
+    return true;
+  };
+}
+
 function toolbarFor(lang) {
   const { schema: s } = { schema };
   return [
     {
       key: 'bold',
       icon: ICONS.bold,
-      run: toggleMark(s.marks.strong),
+      run: toggleMarkAtWord(s.marks.strong),
       isActive: (state) => !!s.marks.strong.isInSet(state.styles ? [] : state.selection.$from.marks())
     },
     {
       key: 'italic',
       icon: ICONS.italic,
-      run: toggleMark(s.marks.em),
+      run: toggleMarkAtWord(s.marks.em),
       isActive: (state) => !!s.marks.em.isInSet(state.selection.$from.marks())
     },
     {
       key: 'underline',
       icon: ICONS.underline,
-      run: toggleMark(s.marks.underline),
+      run: toggleMarkAtWord(s.marks.underline),
       isActive: (state) => !!s.marks.underline.isInSet(state.selection.$from.marks())
     },
     {
       key: 'strike',
       icon: ICONS.strike,
-      run: toggleMark(s.marks.strikethrough),
+      run: toggleMarkAtWord(s.marks.strikethrough),
       isActive: (state) => !!s.marks.strikethrough.isInSet(state.selection.$from.marks())
     },
     { type: 'sep' },
