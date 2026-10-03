@@ -80,8 +80,35 @@ export const THEMES = {
 };
 
 /** Resolve `auto` against the OS setting. */
-export function resolveTheme(theme) {
+/**
+ * The theme an ancestor element has declared, if any.
+ *
+ * A host application commonly keeps its own light/dark switch and writes it to
+ * `<html data-theme="light">` or similar. That is a better signal than the OS,
+ * because the two disagree the moment a user picks a theme inside the app: a
+ * light OS with an app set to dark is a normal combination, and following the
+ * OS there puts a dark editor on a light page.
+ *
+ * Scoped to the element's own ancestors, and deliberately limited to an exact
+ * light/dark value. A data-theme of 'corporate-blue' is the host's business and
+ * is ignored rather than guessed at.
+ */
+export function ancestorTheme(el) {
+  if (typeof document === 'undefined') return null;
+  let node = el && el.parentElement;
+  while (node) {
+    const declared = node.getAttribute && node.getAttribute('data-theme');
+    if (declared === 'light' || declared === 'dark') return declared;
+    node = node.parentElement;
+  }
+  return null;
+}
+
+export function resolveTheme(theme, el) {
   if (theme === 'auto' || theme === undefined || theme === null) {
+    // Prefer the page's own declaration, then the OS.
+    const fromPage = ancestorTheme(el);
+    if (fromPage) return fromPage;
     if (typeof window === 'undefined' || !window.matchMedia) return 'light';
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
@@ -195,8 +222,8 @@ export function accentTokens(accent, mode) {
  * Order matters: preset, then accent-derived tokens, then the caller's own
  * object, so an explicit per-token override always wins.
  */
-export function buildTokens(theme, accent, overrides) {
-  const name = resolveTheme(theme);
+export function buildTokens(theme, accent, overrides, el) {
+  const name = resolveTheme(theme, el);
   const tokens = {};
 
   if (typeof name === 'string' && THEMES[name]) {

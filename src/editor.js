@@ -346,7 +346,7 @@ export class EnterraEdit {
    * with its own rule.
    */
   _applyTheme() {
-    const built = buildTokens(this.options.theme, this.options.accent, null);
+    const built = buildTokens(this.options.theme, this.options.accent, null, this.el);
     this.themeName = built.name;
     // Kept so overlays rendered outside .ee-root can carry the same theme.
     this.themeTokens = built.tokens;
@@ -420,6 +420,23 @@ export class EnterraEdit {
    */
   _watchColorScheme() {
     if (this.options.theme !== 'auto' && this.options.theme !== undefined) return;
+
+    // Watch the ancestor that declares a theme, so a toggle in the host
+    // application moves the editor with it. Without this the editor keeps
+    // whatever it resolved at construction, and a user flipping the page to
+    // light is left with a dark editor sitting in the middle of it.
+    if (typeof MutationObserver === 'function' && this.el && this.el.parentElement) {
+      this._themeObserver = new MutationObserver(() => this._applyTheme());
+      let node = this.el.parentElement;
+      while (node) {
+        this._themeObserver.observe(node, {
+          attributes: true,
+          attributeFilter: ['data-theme', 'class']
+        });
+        node = node.parentElement;
+      }
+    }
+
     if (typeof window === 'undefined' || !window.matchMedia) return;
     this._mq = window.matchMedia('(prefers-color-scheme: dark)');
     this._mqHandler = () => this._applyTheme();
@@ -430,7 +447,7 @@ export class EnterraEdit {
 
   /** Which preset is actually in effect right now. */
   getEffectiveTheme() {
-    return resolveTheme(this.options.theme);
+    return resolveTheme(this.options.theme, this.el);
   }
 
   /**

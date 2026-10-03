@@ -728,6 +728,51 @@ check('it comes back when the field is cleared',
 await php.close();
 fs.unlinkSync(phHtml);
 
+/* ---------- 13b6. following the host page's theme ----------
+ * A host application usually has its own light/dark switch, written to
+ * <html data-theme>. The OS is a worse signal, because the two disagree the
+ * moment someone picks a theme inside the app: a light OS with the app set to
+ * dark put a dark editor in the middle of a light page.
+ */
+
+const hostThemeHtml = path.join(__dirname, '_ht.html');
+fs.writeFileSync(hostThemeHtml, `<!DOCTYPE html><html data-theme="light"><body>
+  <textarea data-enterraedit data-mode="standard"><p>x</p></textarea>
+  <script src="dist/enterraedit.min.js"><\/script></body></html>`);
+
+const htp = await browser.newPage();
+// The OS is set opposite on purpose, so a pass cannot come from it.
+await htp.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: 'dark' }]);
+await htp.goto('file://' + hostThemeHtml, { waitUntil: 'networkidle0' });
+await htp.waitForSelector('.ee-editor');
+
+const hostTheme = () => htp.evaluate(() => {
+  const root = document.querySelector('.ee-root');
+  return { theme: root.getAttribute('data-ee-theme'), bg: getComputedStyle(root).backgroundColor };
+});
+
+const fromPage = await hostTheme();
+check('the editor follows the page theme, not the OS',
+  fromPage.theme === 'light',
+  `page declared light, OS is dark, editor resolved ${fromPage.theme}`);
+
+await htp.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
+await new Promise((r) => setTimeout(r, 250));
+const afterToggle = await hostTheme();
+check('and follows it live when the host toggles',
+  afterToggle.theme === 'dark',
+  `editor resolved ${afterToggle.theme} after the page changed`);
+
+await htp.evaluate(() => document.documentElement.removeAttribute('data-theme'));
+await new Promise((r) => setTimeout(r, 250));
+const afterRemoval = await hostTheme();
+check('falling back to the OS when the page declares nothing',
+  afterRemoval.theme === 'dark',
+  `no page theme, OS is dark, editor resolved ${afterRemoval.theme}`);
+
+await htp.close();
+fs.unlinkSync(hostThemeHtml);
+
 /* ---------- 13c. theming ---------- */
 
 const themeInfo = await page.evaluate(() => {
