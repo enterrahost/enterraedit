@@ -64,13 +64,20 @@ const GROUPS = {
     'paragraph',
     'bulletList',
     'orderedList',
-    'blockquote',
-    'codeBlock',
-    'horizontalRule'
+    'blockquote'
   ],
 
-  // Things that change the shape of a page rather than a paragraph.
-  rich: ['image', 'table']
+  // Less common blocks, and things that change the shape of a page rather than
+  // a paragraph.
+  //
+  // These were part of standard until it reached 17 of the 19 buttons and
+  // stopped being a mode at all: it needed 592px in a 578px column, so the
+  // toolbar wrapped and left a single button stranded on its own row.
+  //
+  // A mode should be a recognisable choice rather than full minus two. These
+  // four are the ones most article bodies never reach for, so they are what
+  // separates standard from full.
+  rich: ['codeBlock', 'horizontalRule', 'image', 'table']
 };
 
 export const MODES = {
