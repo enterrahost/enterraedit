@@ -996,6 +996,80 @@ check('an empty paragraph does not throw',
 await mkp.close();
 fs.unlinkSync(markHtml);
 
+/* ---------- 13b9. selection is visible in both themes ----------
+ * Reported from the product page: text selected in the dark editor showed no
+ * highlight at all. Nothing styled ::selection, so the browser drew it from
+ * the OS colour scheme, and a dark editor on a light machine got the light
+ * theme's pale highlight against its own dark background.
+ */
+
+const selCss = await page.evaluate(() => {
+  const css = document.getElementById('enterraedit-styles').textContent;
+  return {
+    hasRule: /::selection/.test(css),
+    hasMozRule: /::-moz-selection/.test(css)
+  };
+});
+check('a ::selection rule is present',
+  selCss.hasRule, selCss.hasRule ? 'present' : 'not found');
+check('and the Firefox spelling too',
+  selCss.hasMozRule, selCss.hasMozRule ? 'present' : 'not found');
+
+// The rule must use the theme's own tokens, or it would not follow a theme.
+check('the selection uses the theme tokens rather than fixed colours',
+  /::selection[^}]*background:\s*var\(--ee-focus\)/.test(
+    await page.evaluate(() => document.getElementById('enterraedit-styles').textContent)
+  ),
+  'expected background: var(--ee-focus)');
+
+// And it must contrast against the surface in every preset, including a
+// custom accent, since that is what a real embed is most likely to use.
+const selHtml = path.join(__dirname, '_se.html');
+fs.writeFileSync(selHtml, `<!DOCTYPE html><html><body>
+  <textarea id="sd" data-enterraedit data-theme="dark" data-toolbar="false"><p>Selected text</p></textarea>
+  <textarea id="sl" data-enterraedit data-theme="light" data-toolbar="false"><p>Selected text</p></textarea>
+  <textarea id="sa" data-enterraedit data-theme="dark" data-accent="#345332" data-toolbar="false"><p>Selected text</p></textarea>
+  <script src="dist/enterraedit.min.js"><\/script></body></html>`);
+const sep = await browser.newPage();
+await sep.goto('file://' + selHtml, { waitUntil: 'networkidle0' });
+await sep.waitForSelector('.ee-editor');
+
+const selRatios = await sep.evaluate(() => {
+  const out = [];
+  for (const id of ['sd', 'sl', 'sa']) {
+    const ed = window.EnterraEdit.getInstance(document.getElementById(id));
+    const root = ed.root;
+    const cs = getComputedStyle(root);
+    out.push({
+      id,
+      theme: root.getAttribute('data-ee-theme'),
+      focus: cs.getPropertyValue('--ee-focus').trim(),
+      bg: cs.getPropertyValue('--ee-bg').trim()
+    });
+  }
+  return out;
+});
+
+const hexLum = (hex) => {
+  const h = hex.replace('#', '');
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.substr(i, 2), 16) / 255)
+    .map((c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const hexRatio = (a, b) => {
+  const [hi, lo] = [hexLum(a), hexLum(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+
+for (const r of selRatios) {
+  check(`selected text is legible in ${r.theme}${r.id === 'sa' ? ' with a custom accent' : ''}`,
+    hexRatio(r.focus, r.bg) >= 4.5,
+    `${r.focus} on ${r.bg} = ${hexRatio(r.focus, r.bg).toFixed(2)}:1`);
+}
+
+await sep.close();
+fs.unlinkSync(selHtml);
+
 /* ---------- 13c. theming ---------- */
 
 const themeInfo = await page.evaluate(() => {

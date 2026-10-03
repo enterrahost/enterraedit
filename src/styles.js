@@ -293,6 +293,35 @@ export const STYLES = `
   border-radius: 4px;
 }
 
+/* Text selection.
+ *
+ * Left to the browser, the highlight is drawn from the OS colour scheme rather
+ * than from the editor's theme, so a dark editor on a light machine gets a
+ * pale highlight that is nearly invisible against its own background. Same
+ * failure as the tooltips: correct-looking CSS, wrong signal.
+ *
+ * --ee-focus is already a contrasting accent for the current theme, and
+ * --ee-bg is the surface, so the pair reads in every preset including a custom
+ * accent. The text keeps its own colour, which stays legible on the accent
+ * because that is what the accent was derived to be.
+ *
+ * Both spellings: ::selection for the standard, and the -moz- prefixed one for
+ * Firefox versions that still require it.
+ */
+.ee-editor ::selection,
+.ee-surface ::selection,
+.ee-root ::selection {
+  background: var(--ee-focus);
+  color: var(--ee-bg);
+}
+
+.ee-editor ::-moz-selection,
+.ee-surface ::-moz-selection,
+.ee-root ::-moz-selection {
+  background: var(--ee-focus);
+  color: var(--ee-bg);
+}
+
 /* Selected images and cells need a visible state, or drag and selection
    look like nothing happened. */
 .ee-editor img.ProseMirror-selectednode {
