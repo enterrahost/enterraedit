@@ -22,6 +22,27 @@ export const STYLES = `
  * selection is the instance's job (see themes.js), because a media query would
  * override an explicit light theme chosen on a dark-mode machine.
  */
+/* --- preventing a flash of source markup ------------------------------
+ *
+ * The editor is one script tag, and the script necessarily runs after the
+ * fields it upgrades have been parsed and painted. On a slow load that shows
+ * the raw value as plain text: a page whose field contains
+ * <h2>Try the editor</h2> briefly displays exactly that string.
+ *
+ * A host page can close the gap by putting this rule in a stylesheet in its
+ * head, which is parsed before any content is painted:
+ *
+ *   [data-enterraedit] { visibility: hidden; }
+ *
+ * Nothing here can do it on the host's behalf, because the editor's own
+ * stylesheet arrives with the script, long after first paint. What the editor
+ * does instead is remove the attribute's hiding once it has built, and leave
+ * the field visible untouched if it could not. visibility is specified
+ * rather than display so the element keeps its box: a display:none textarea
+ * is skipped by some form serialisers, and the field has to remain submittable
+ * whether or not the editor ever initialises.
+ */
+
 .ee-root {
   /* Sizing. Defaults here; JS overrides per instance. */
   --ee-width: 100%;

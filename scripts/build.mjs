@@ -28,6 +28,26 @@ const dev = process.argv.includes('--dev');
 
 const outfile = path.join(root, 'dist', dev ? 'enterraedit.js' : 'enterraedit.min.js');
 
+// The stylesheet lives in a template literal, so a backtick inside a CSS
+// comment terminates the string and the build fails with a syntax error
+// pointing at the comment rather than at the backtick. That has happened three
+// times. Checking first turns a confusing esbuild error into a clear one.
+const stylesSource = fs.readFileSync(path.join(root, 'src', 'styles.js'), 'utf8');
+const literalStart = stylesSource.indexOf('export const STYLES = `');
+if (literalStart !== -1) {
+  const body = stylesSource.slice(literalStart + 'export const STYLES = `'.length);
+  const end = body.lastIndexOf('`');
+  const css = end === -1 ? body : body.slice(0, end);
+  const line = css.split('\n').findIndex((l) => l.includes('`'));
+  if (line !== -1) {
+    console.error('Backtick inside the STYLES template literal.');
+    console.error(`  src/styles.js, ${line + 1} line(s) into the CSS.`);
+    console.error('  A backtick ends the string, so the CSS cannot contain one, even in a comment.');
+    console.error('  Use plain text or single quotes instead.');
+    process.exit(1);
+  }
+}
+
 // esbuild will not create missing directories, so a clean checkout, or anyone
 // who deleted dist/ to force a rebuild, gets a failure rather than a build.
 // dist/ is gitignored, which makes that the normal case on a fresh clone.

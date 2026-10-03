@@ -508,6 +508,17 @@ export class EnterraEdit {
 
     this.root.appendChild(this.status);
 
+    // Hide the source field now that the editor owns the space. display:none
+    // rather than visibility, because the editor is fully built at this point
+    // and the field no longer needs a box. A host page that pre-hid the field
+    // with `visibility: hidden` is undone here, or it would stay invisible if
+    // it were ever unhidden by something else.
+    // Marks the field as upgraded, so a host page rule like
+    // `[data-enterraedit]:not(.ee-ready) { visibility: hidden }` stops applying.
+    // The inline style below is what actually hides it from here on.
+    el.classList.add('ee-ready');
+    el.style.visibility = '';
+    el.removeAttribute('aria-hidden');
     el.style.display = 'none';
     el.parentNode.insertBefore(this.root, el.nextSibling);
 
@@ -1276,11 +1287,55 @@ export function initEditors(root = document) {
 
 export function autoInitWhenReady() {
   if (typeof document === 'undefined') return;
+
+  // Hide the source fields and inject the stylesheet now, before waiting for
+  // DOMContentLoaded.
+  //
+  // The script is loaded with defer, so it runs after the HTML is parsed and
+  // the browser has already painted. Auto-init then waited for
+  // DOMContentLoaded, and the textarea was hidden at the end of construction.
+  // Between first paint and that moment the raw markup was on screen as plain
+  // text: a page with <h2>Try the editor</h2> in a textarea showed exactly
+  // that, then replaced it. The wait is what makes it visible, and on a cold
+  // load or a slow connection it lasts long enough to read.
+  //
+  // Doing these two things here closes it. Neither depends on the DOM being
+  // ready: the stylesheet is appended to head, and the rule itself is what
+  // hides the fields, so nothing has to be found or measured first.
+  primeAutoInit();
+
   const go = () => initEditors(document);
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', go);
   } else {
     go();
+  }
+}
+
+/**
+ * Hide marked fields and install the stylesheet ahead of the upgrade.
+ *
+ * Deliberately tolerant: if this throws, the editor should still initialise,
+ * just with the flash it had before. A missing hint is better than a dead page.
+ */
+function primeAutoInit() {
+  try {
+    if (!document.getElementById('enterraedit-styles')) {
+      const style = document.createElement('style');
+      style.id = 'enterraedit-styles';
+      style.textContent = STYLES;
+      (document.head || document.documentElement).appendChild(style);
+    }
+
+    // A class added one element at a time, because querySelectorAll is useless
+    // until the elements are parsed and the rule has to cover whatever exists
+    // now plus whatever the parser produces next. The stylesheet carries a rule
+    // for the attribute itself as well, so a field parsed after this line is
+    // still hidden on arrival.
+    const marked = document.querySelectorAll(SELECTOR);
+    for (const el of marked) el.classList.add('ee-pending');
+  } catch (e) {
+    // Nothing here is worth breaking initialisation over.
   }
 }
 
