@@ -10,9 +10,9 @@ A drop-in rich text editor. **One script tag, no build step, MIT.**
 </textarea>
 ```
 
-That is the entire integration. No npm, no bundler, no framework, no GPL, no
-licence key. The `<textarea>` stays in the DOM and stays in sync, so your
-existing form and server code are unchanged.
+That is the entire integration. No bundler, no framework, no GPL, no licence
+key. The `<textarea>` stays in the DOM and stays in sync, so your existing form
+and server code are unchanged.
 
 One file, zero network requests, 168 browser tests.
 
@@ -25,36 +25,41 @@ Built by [Enterrahost](https://enterrahost.com) on
 [ProseMirror](https://prosemirror.net), so selection, paste, IME, undo, bidi and
 accessibility are correct by construction rather than hand-rolled.
 
-![Light mode](shots/demo-light.png)
+![Light mode](https://raw.githubusercontent.com/enterrahost/enterraedit/main/shots/demo-light.png)
 
-## Not installable yet
+## Getting it
 
-There is no release tag, no package, and no hosted build. What exists is the
-editor, its tests and a demo page.
+**From our CDN.** One script tag, nothing to build, nothing to update:
 
-    npm install && npm run build     # from a checkout
-    open demo/index.html             # to look at it
+```html
+<script src="https://cdn.enterrahost.com/enterraedit/v1/enterraedit.min.js"></script>
+```
 
-Packaging and a hosted build are the next step. Until they land, this is
-source to read rather than a dependency to add.
+This build carries a small attribution badge, which is what pays for the CDN.
+It is the only difference from the copy below.
+
+**From npm**, if you would rather bundle it:
+
+```sh
+npm install enterraedit
+```
+
+**From source**, for a fully badge-free build:
+
+```sh
+git clone https://github.com/enterrahost/enterraedit
+cd enterraedit && npm install && npm run build
+```
+
+Whichever you choose, the integration is the same two lines at the top of this
+file. The self-hosted builds add nothing to your page at all: no badge, no
+backlink, no head comment.
 
 
 ## What this is
 
 A real ProseMirror document model, wrapped in the declarative drop-in layer
 worth keeping from the original.
-
-```html
-<script src="enterraedit.min.js" data-enterraedit></script>
-
-<textarea name="body" data-enterraedit>
- <p>Anything you like.</p>
-</textarea>
-```
-
-That is the entire integration. No npm, no bundler, no React, no framework, no
-GPL, no licence key. The `<textarea>` stays in the DOM and stays in sync, so the
-form submits normal HTML and the editor is pure progressive enhancement.
 
 ---
 
@@ -65,7 +70,7 @@ form submits normal HTML and the editor is pure progressive enhancement.
 Everything the original hand-rolled is now ProseMirror's, and correct by
 construction:
 
-| Concern | Original | Spike |
+| Concern | Original | EnterraEdit |
 | --- | --- | --- |
 | Editing model | `contenteditable` + `execCommand` (deprecated) | Real document model + transactions |
 | Undo/redo | Full-`innerHTML` snapshots, could go permanently dead | `prosemirror-history`, correct |
@@ -73,13 +78,13 @@ construction:
 | Paste | **none** (Word paste was catastrophic) | Inherited, schema-validated |
 | IME / composition | **none** | Inherited |
 | Selection across edits | hand-managed | Inherited |
-| Media insert | **threw every time** | Not in spike (see gaps) |
+| Media insert | **threw every time** | Not implemented (see gaps) |
 
 ### i18n drives tooltips, accessible names, *and* spellcheck
 
 One string table feeds three consumers, so a translation is written once:
 
-![German](shots/demo-de.png)
+![German](https://raw.githubusercontent.com/enterrahost/enterraedit/main/shots/demo-de.png)
 
 ```js
 strings.de = { bold: 'Fett', italic: 'Kursiv', /* other keys omitted */ };
@@ -126,7 +131,7 @@ easy to get wrong and are handled here:
 
 ### Accessibility
 
-| | Original | Spike |
+| | Original | EnterraEdit |
 | --- | --- | --- |
 | `aria-label` on buttons | **0 of 32** | 16 of 16 |
 | `role="toolbar"` | no | yes, with `aria-label` |
@@ -228,7 +233,7 @@ new EnterraEdit({ element: el, mode: 'standard' });
 new EnterraEdit({ element: el, toolbarKeys: ['bold', 'italic', 'link'] });
 ```
 
-![Modes](shots/modes.png)
+![Modes](https://raw.githubusercontent.com/enterrahost/enterraedit/main/shots/modes.png)
 
 A mode only controls **which buttons appear**. It does not change what the
 document accepts, so content pasted into a `comment` field is parsed by the same
@@ -239,7 +244,7 @@ which this does not do.
 
 Every button has a key. Pass the ones you want, in any order:
 
-![Button picker](shots/button-picker.png)
+![Button picker](https://raw.githubusercontent.com/enterrahost/enterraedit/main/shots/button-picker.png)
 
 ```html
 <textarea data-enterraedit
@@ -282,7 +287,7 @@ change, copy the resulting attribute.
 Full mode adds an image and a table button, both reusing the same dialog
 component.
 
-![Image dialog](shots/image-dialog.png)
+![Image dialog](https://raw.githubusercontent.com/enterrahost/enterraedit/main/shots/image-dialog.png)
 
 **Images** can be pasted straight in. A screenshot on the clipboard is picked
 up automatically, and dragging an image file onto the editor works the same way.
@@ -305,7 +310,7 @@ keeps it dependency-free. The browser supplies the focus trap, Escape handling,
 focus restoration and the backdrop, all of which are the parts modals usually
 get wrong when written by hand.
 
-![Link dialog](shots/link-dialog.png)
+![Link dialog](https://raw.githubusercontent.com/enterrahost/enterraedit/main/shots/link-dialog.png)
 
 - Inline validation. An unsafe address shows a message and keeps the dialog
   open, rather than an `alert()` that cannot be styled or read properly.
@@ -358,7 +363,7 @@ const html = ta.value; // <p>Hello <strong>there</strong></p>
 const text = ed.getText(); // "Hello there" (plain, for plain destinations)
 ```
 
-![Form patterns](shots/form-patterns.png)
+![Form patterns](https://raw.githubusercontent.com/enterrahost/enterraedit/main/shots/form-patterns.png)
 
 **Plain-text fields just work.** A contact-form textarea usually contains text,
 not markup. If the source has no block-level HTML, newlines are converted to
@@ -411,7 +416,7 @@ No framework, no viewport hacks:
 | `pointer: coarse` | touch targets grow to 40px |
 | landscape phone | height cap reduced, since viewport height is the scarce resource |
 
-![Mobile](shots/mobile-editor.png)
+![Mobile](https://raw.githubusercontent.com/enterrahost/enterraedit/main/shots/mobile-editor.png)
 
 ### Fonts
 
@@ -476,11 +481,11 @@ Measured, and asserted in the test suite:
 | light mode | `#2c472b` | **10.28:1** |
 | dark mode | `#8fa08e` | **6.40:1** |
 
-![Accent in light mode](shots/theme-accent-light.png)
+![Accent in light mode](https://raw.githubusercontent.com/enterrahost/enterraedit/main/shots/theme-accent-light.png)
 
 The same hex in dark mode, where the link lightens rather than staying raw:
 
-![Accent in dark mode](shots/theme-accent-dark.png)
+![Accent in dark mode](https://raw.githubusercontent.com/enterrahost/enterraedit/main/shots/theme-accent-dark.png)
 
 Because these are plain CSS variables set inline on `.ee-root`, a host page can
 restyle anything with ordinary CSS and no JS at all:
@@ -541,6 +546,18 @@ switching, WCAG contrast of derived accents, form submission, and the XSS
 guard. Behavioural claims are observed, not inferred.
 
 ---
+
+## Licence and credits
+
+MIT. Use it, change it, ship it, sell it if you like. The only ask is that the
+licence notice stays with the code.
+
+It is built on [ProseMirror](https://prosemirror.net) by
+[Marijn Haverbeke](https://marijnhaverbeke.nl) and contributors, which is also
+MIT. ProseMirror is compiled into the built file, so its copyright notice is
+prepended to `dist/enterraedit.min.js` and the full text is in
+[THIRD-PARTY.md](THIRD-PARTY.md). Nothing else is bundled: no fonts, no icon
+sets, no analytics, and no network requests at runtime.
 
 ## Known limitations
 

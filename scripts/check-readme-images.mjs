@@ -21,14 +21,29 @@ const referenced = new Set(
  [...text.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)].map((m) => m[1])
 );
 
+// Images are referenced by absolute raw.githubusercontent.com URL so that they
+// render on the npm package page, where a relative path resolves against npm
+// rather than this repository. The local file still has to exist, so a remote
+// reference is mapped back to its path here. Without this the unused-file check
+// below would report every image as unreferenced.
+const RAW_PREFIX =
+ 'https://raw.githubusercontent.com/enterrahost/enterraedit/main/';
+
+const referencedLocally = new Set(
+ [...referenced].map((ref) =>
+  ref.startsWith(RAW_PREFIX) ? ref.slice(RAW_PREFIX.length) : ref
+ )
+);
+
 let failed = false;
 
 for (const ref of referenced) {
- if (/^https?:/.test(ref)) continue;
- const file = path.join(root, ref);
+ if (/^https?:/.test(ref) && !ref.startsWith(RAW_PREFIX)) continue;
+ const local = ref.startsWith(RAW_PREFIX) ? ref.slice(RAW_PREFIX.length) : ref;
+ const file = path.join(root, local);
  if (!fs.existsSync(file)) {
- console.error(`MISSING ${ref}, referenced in README.md but does not exist`);
- failed = true;
+  console.error(`MISSING ${local}, referenced in README.md but does not exist`);
+  failed = true;
  }
 }
 
@@ -36,7 +51,7 @@ const shotsDir = path.join(root, 'shots');
 if (fs.existsSync(shotsDir)) {
  for (const name of fs.readdirSync(shotsDir)) {
  const rel = `shots/${name}`;
- if (!referenced.has(rel)) {
+ if (!referencedLocally.has(rel)) {
  console.warn(`UNUSED ${rel}, present but not referenced in README.md`);
  }
  }

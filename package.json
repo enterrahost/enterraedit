@@ -4,8 +4,8 @@
   "type": "module",
   "scripts": {
     "prebuild": "node scripts/sync-version.mjs",
-    "build": "esbuild src/index.js --bundle --minify --format=iife --global-name=EnterraEditBundle --outfile=dist/enterraedit.min.js",
-    "build:dev": "esbuild src/index.js --bundle --format=iife --global-name=EnterraEditBundle --outfile=dist/enterraedit.js",
+    "build": "node scripts/build.mjs",
+    "build:dev": "node scripts/build.mjs --dev",
     "test": "node scripts/check-readme-images.mjs && node test.mjs && npm run check:csp",
     "check:images": "node scripts/check-readme-images.mjs",
     "prepublishOnly": "npm run build && npm test",
@@ -39,7 +39,8 @@
     "src",
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "THIRD-PARTY.md"
   ],
   "repository": {
     "type": "git",
