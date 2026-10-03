@@ -430,6 +430,24 @@ export const STYLES = `
   border: 1px solid transparent;
 }
 
+/* One reset for every control the editor builds itself.
+ *
+ * Safari and Firefox give buttons and inputs their own native appearance, which
+ * paints a white active state over ours and fades the icon inside it. Chrome
+ * does not, so the fault only appeared in some browsers and looked like a
+ * styling mistake rather than a missing reset. appearance: none makes the rules
+ * above the whole of a control's look, and also stops the native focus ring
+ * from fighting the one the editor draws.
+ */
+.ee-btn,
+.ee-dialog-close,
+.ee-btn-primary,
+.ee-btn-secondary,
+.ee-dialog-input {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
 .ee-btn-primary {
   background: var(--ee-focus);
   /* Text on the accent has to contrast with it, not with the page, so this is

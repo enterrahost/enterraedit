@@ -598,6 +598,45 @@ for (const theme of ['light', 'dark']) {
     `theme=${r.theme} color-scheme=${r.computed}`);
 }
 
+/* ---------- 13b4. native control appearance ----------
+ * Safari and Firefox give buttons their own native appearance, which paints a
+ * white active state over ours and fades the icon inside it. Chrome does not,
+ * so this only ever appeared in some browsers, and looked like a styling
+ * mistake rather than a missing reset. Asserted here because Chrome is what
+ * runs the suite: a pass in Chrome says nothing about Safari on its own.
+ */
+
+const apHtml = path.join(__dirname, '_ap.html');
+fs.writeFileSync(apHtml, `<!DOCTYPE html><html><body>
+  <textarea data-enterraedit data-mode="full" data-theme="dark"><p>x</p></textarea>
+  <script src="dist/enterraedit.min.js"><\/script></body></html>`);
+const app = await browser.newPage();
+await app.goto('file://' + apHtml, { waitUntil: 'networkidle0' });
+await app.waitForSelector('.ee-editor');
+await app.evaluate(() => {
+  const btn = [...document.querySelectorAll('.ee-btn')].find((b) => b.title === 'Insert link');
+  btn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+});
+await app.waitForSelector('.ee-dialog[open]', { timeout: 3000 });
+
+const appearances = await app.evaluate(() => {
+  const out = {};
+  for (const sel of ['.ee-btn', '.ee-dialog-close', '.ee-btn-primary',
+                     '.ee-btn-secondary', '.ee-dialog-input']) {
+    const el = document.querySelector(sel);
+    out[sel] = el ? getComputedStyle(el).appearance : 'missing';
+  }
+  return out;
+});
+
+for (const [sel, value] of Object.entries(appearances)) {
+  check(`${sel} has no native appearance`,
+    value === 'none',
+    `appearance: ${value}`);
+}
+await app.close();
+fs.unlinkSync(apHtml);
+
 /* ---------- 13c. theming ---------- */
 
 const themeInfo = await page.evaluate(() => {
