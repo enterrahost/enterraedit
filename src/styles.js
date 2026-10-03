@@ -153,6 +153,43 @@ export const STYLES = `
 
 .ee-surface { position: relative; }
 
+/* Placeholder.
+ *
+ * Drawn as a ::before on the surface rather than written into the document, so
+ * it never becomes content: nothing to strip on paste, nothing to serialise,
+ * nothing a screen reader reads as text the visitor wrote.
+ *
+ * Shown only while the document is empty. The editor sets aria-empty on the
+ * surface from ProseMirror's own emptiness rather than by measuring text,
+ * because a document containing one empty paragraph is empty to a reader but
+ * its textContent is an empty string either way, and an <img> alone is not.
+ *
+ * Outside .ee-editor, so it does not inherit the content colour or participate
+ * in the editable region at all.
+ */
+.ee-surface { position: relative; }
+
+.ee-surface[data-placeholder]:not([data-placeholder=''])[aria-empty='true']::before {
+  content: attr(data-placeholder);
+  position: absolute;
+  inset-block-start: 12px;
+  inset-inline-start: 14px;
+  /* Match the surface padding so it sits exactly where typing would start. */
+  max-inline-size: calc(100% - 28px);
+  color: var(--ee-muted);
+  pointer-events: none;
+  /* Never announced: the description is the host page's job, and a placeholder
+     read aloud twice is worse than not read at all. */
+  user-select: none;
+}
+
+/* The caret still has to reach the first line, so the placeholder must not
+   swallow a click meant to focus the field. pointer-events: none handles that.
+   The editor deliberately gets no z-index: giving it one creates a stacking
+   context that paints its opaque background over the placeholder, which then
+   exists in the computed style and nowhere on screen. */
+.ee-surface > .ee-editor { position: static; }
+
 .ee-editor {
   /* Long unbroken strings (URLs, code) must wrap rather than widen the box. */
   overflow-wrap: anywhere;

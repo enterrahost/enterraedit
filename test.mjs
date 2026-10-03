@@ -637,6 +637,97 @@ for (const [sel, value] of Object.entries(appearances)) {
 await app.close();
 fs.unlinkSync(apHtml);
 
+/* ---------- 13b5. placeholder ----------
+ * A textarea's placeholder was lost the moment the editor replaced it, which
+ * is the wrong way round: the attribute was already written, and an empty
+ * message box with no prompt is worse than a plain textarea.
+ */
+
+const phHtml = path.join(__dirname, '_ph.html');
+fs.writeFileSync(phHtml, `<!DOCTYPE html><html><body>
+  <textarea data-enterraedit data-mode="comment"
+            placeholder="Tell us what happened."><p></p></textarea>
+  <script src="dist/enterraedit.min.js"><\/script></body></html>`);
+const php = await browser.newPage();
+await php.goto('file://' + phHtml, { waitUntil: 'networkidle0' });
+await php.waitForSelector('.ee-editor');
+
+const placeholderState = () => php.evaluate(() => {
+  const surface = document.querySelector('.ee-surface');
+  return {
+    attr: surface.getAttribute('aria-empty'),
+    shown: getComputedStyle(surface, '::before').content,
+    text: surface.getAttribute('data-placeholder')
+  };
+});
+
+const emptyState = await placeholderState();
+check('the placeholder is carried over from the textarea',
+  emptyState.text === 'Tell us what happened.', String(emptyState.text));
+check('it shows while the document is empty',
+  emptyState.attr === 'true' && emptyState.shown.includes('Tell us'),
+  `aria-empty=${emptyState.attr} content=${emptyState.shown}`);
+
+// Computed style is not enough, and that is the whole point of this check.
+// The placeholder resolved correctly and was invisible on screen for a while,
+// because the editor carried a z-index that painted its own background over
+// it. Nothing in getComputedStyle('::before') shows that. Sampling the pixels
+// is the only way to tell the two apart.
+const phPixels = await php.evaluate(() => {
+  const surface = document.querySelector('.ee-surface');
+  const r = surface.getBoundingClientRect();
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(r.width);
+  canvas.height = Math.round(r.height);
+  return { w: canvas.width, h: canvas.height };
+});
+
+const phShot = await php.screenshot({ encoding: 'base64' });
+const phVisible = await php.evaluate(async (b64) => {
+  const img = new Image();
+  img.src = 'data:image/png;base64,' + b64;
+  await img.decode();
+  const c = document.createElement('canvas');
+  c.width = img.width;
+  c.height = img.height;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  // The top-left strip is where the placeholder sits. If it is drawn, this
+  // strip contains more than one distinct colour.
+  const data = ctx.getImageData(0, 0, Math.min(300, img.width), Math.min(40, img.height)).data;
+  const seen = new Set();
+  for (let i = 0; i < data.length; i += 4) {
+    seen.add(`${data[i]},${data[i + 1]},${data[i + 2]}`);
+  }
+  return seen.size;
+}, phShot);
+
+check('the placeholder is actually painted, not just computed',
+  phVisible > 1,
+  `${phVisible} distinct colour(s) in the placeholder strip; 1 means it rendered nothing`);
+
+await php.evaluate(() => {
+  const ed = window.EnterraEdit.getInstance(document.querySelector('textarea'));
+  ed.view.dispatch(ed.view.state.tr.insertText('hello', 1));
+});
+await new Promise((r) => setTimeout(r, 150));
+const typedState = await placeholderState();
+check('it hides once there is content',
+  typedState.attr === 'false' && typedState.shown === 'none',
+  `aria-empty=${typedState.attr} content=${typedState.shown}`);
+
+await php.evaluate(() => {
+  const ed = window.EnterraEdit.getInstance(document.querySelector('textarea'));
+  ed.setHTML('<p></p>');
+});
+await new Promise((r) => setTimeout(r, 150));
+const clearedState = await placeholderState();
+check('it comes back when the field is cleared',
+  clearedState.attr === 'true', `aria-empty=${clearedState.attr}`);
+
+await php.close();
+fs.unlinkSync(phHtml);
+
 /* ---------- 13c. theming ---------- */
 
 const themeInfo = await page.evaluate(() => {
@@ -1424,8 +1515,16 @@ await mp.evaluate(() => {
 // Wait for the field rather than a fixed delay: the dialog is created
 // asynchronously and a fixed timeout makes this assertion flaky under load.
 await mp.waitForSelector('[name="src"]', { timeout: 3000 });
-const imageDialogUp = () => until(mp, () => !!document.querySelector('.ee-dialog')?.open,
-  { label: 'image dialog' });
+// Wait for the dialog to be open AND the field focusable before typing into
+// it. waitForSelector alone resolves as soon as the element exists, which can
+// be before the dialog has finished opening, and an input event dispatched at
+// that moment is lost. That produced an intermittent failure in which the
+// field still held its previous value.
+await until(mp, () => {
+  const d = document.querySelector('.ee-dialog');
+  const i = document.querySelector('[name="src"]');
+  return !!(d && d.open && i && i.offsetParent !== null);
+}, { label: 'image dialog open and focusable' });
 await mp.evaluate(() => {
   const i = document.querySelector('[name="src"]');
   const s = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;

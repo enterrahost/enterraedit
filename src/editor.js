@@ -298,6 +298,13 @@ export class EnterraEdit {
       font: options.font || el.getAttribute('data-font') || null,
       fontSize: options.fontSize || el.getAttribute('data-font-size') || null,
       branding: resolveBranding(options.branding, el),
+      // A textarea's placeholder is visible until the editor replaces it, and
+      // was then lost. Reading it here means the attribute an integrator
+      // already wrote keeps working.
+      placeholder:
+        options.placeholder !== undefined
+          ? options.placeholder
+          : el.getAttribute('placeholder') || el.getAttribute('data-placeholder') || null,
       strings: Object.assign({}, STRINGS[lang.base], options.strings || {}),
       onChange: options.onChange || null,
       name: el.getAttribute('data-name') || el.getAttribute('name') || null
@@ -478,6 +485,15 @@ export class EnterraEdit {
     this.editorHost = document.createElement('div');
     this.editorHost.className = 'ee-surface';
     this.root.appendChild(this.editorHost);
+
+    // The placeholder lives on the surface rather than the contenteditable, so
+    // it shows through only while the document is empty and never becomes part
+    // of the content. CSS does the showing and hiding from data attributes,
+    // which keeps it out of ProseMirror's model entirely: nothing to strip on
+    // paste, nothing to serialise, nothing a screen reader reads twice.
+    // Set as an attribute whether or not one was given, because the CSS keys
+    // off its presence and an empty value keeps the two paths identical.
+    this.editorHost.setAttribute('data-placeholder', this.options.placeholder || '');
 
     this.status = document.createElement('div');
     this.status.className = 'ee-status';
@@ -1091,6 +1107,25 @@ export class EnterraEdit {
       }
     });
     this._updateCount();
+    this._updatePlaceholder(state);
+  }
+
+  /**
+   * Tell the stylesheet whether the document is empty.
+   *
+   * ProseMirror knows this properly: a document with one empty paragraph is
+   * empty to a reader, and so is one holding a single empty text node, while
+   * textContent of either is the empty string. Measuring the DOM would be
+   * coincidentally right today and wrong the moment a node has no text, such as
+   * an image on its own.
+   */
+  _updatePlaceholder(state) {
+    if (!this.editorHost.hasAttribute('data-placeholder')) return;
+    const doc = state.doc;
+    const empty =
+      doc.childCount === 0 ||
+      (doc.childCount === 1 && doc.firstChild.isTextblock && doc.firstChild.content.size === 0);
+    this.editorHost.setAttribute('aria-empty', empty ? 'true' : 'false');
   }
 
   _updateCount() {

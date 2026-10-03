@@ -185,7 +185,7 @@ stylesheet is a fixed string so it has one hash:
 Content-Security-Policy:
   default-src 'self';
   script-src 'self';
-  style-src 'self' 'sha256-ycagN/phrhIBtVtJLB3jG7qq9M0y7qgCRwGLcz0QWmQ=';
+  style-src 'self' 'sha256-RU/Xwk7CwuDH1uRBmJDH1fYxyU1jWv66JKi6wBlsz7g=';
 ```
 
 **This hash changes whenever the editor's styles change**, so it must be
