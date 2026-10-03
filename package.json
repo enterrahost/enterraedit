@@ -6,10 +6,11 @@
     "prebuild": "node scripts/sync-version.mjs",
     "build": "esbuild src/index.js --bundle --minify --format=iife --global-name=EnterraEditBundle --outfile=dist/enterraedit.min.js",
     "build:dev": "esbuild src/index.js --bundle --format=iife --global-name=EnterraEditBundle --outfile=dist/enterraedit.js",
-    "test": "node scripts/check-readme-images.mjs && node test.mjs",
+    "test": "node scripts/check-readme-images.mjs && node test.mjs && npm run check:csp",
     "check:images": "node scripts/check-readme-images.mjs",
     "prepublishOnly": "npm run build && npm test",
-    "pack:check": "npm pack --dry-run"
+    "pack:check": "npm pack --dry-run",
+    "check:csp": "node scripts/check-csp-hash.mjs"
   },
   "dependencies": {
     "prosemirror-commands": "^1.7.2",
