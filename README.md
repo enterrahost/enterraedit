@@ -549,8 +549,13 @@ guard. Behavioural claims are observed, not inferred.
 
 ## Licence and credits
 
-MIT. Use it, change it, ship it, sell it if you like. The only ask is that the
-licence notice stays with the code.
+MIT. Take it, install it, fork it, change it, ship it inside your own product.
+Nothing to sign up for, no key to obtain, no obligation to share anything back.
+
+Free on every route, and staying that way: the CDN costs nothing to use, the
+source costs nothing to take, and the npm package costs nothing to install. The
+only ask is the one the licence already makes, which is that the copyright
+notice stays with the code.
 
 It is built on [ProseMirror](https://prosemirror.net) by
 [Marijn Haverbeke](https://marijnhaverbeke.nl) and contributors, which is also
