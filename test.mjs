@@ -1174,6 +1174,81 @@ check('Backspace lifts an item out of the list entirely',
 await lsp.close();
 fs.unlinkSync(listHtml);
 
+/* ---------- 13b11. quote and unlink ----------
+ * Both reported from the toolbox as doing nothing at all. Both were commands
+ * that returned without acting, for two different reasons.
+ */
+
+const buHtml = path.join(__dirname, '_bu.html');
+fs.writeFileSync(buHtml, `<!DOCTYPE html><html><body>
+  <textarea id="bu" data-enterraedit
+    data-toolbar-keys="link,unlink,blockquote,bulletList"><p>x</p></textarea>
+  <script src="dist/enterraedit.min.js"><\/script></body></html>`);
+const bup = await browser.newPage();
+await bup.goto('file://' + buHtml, { waitUntil: 'networkidle0' });
+await bup.waitForSelector('.ee-editor');
+
+const buHtml2 = () => bup.evaluate(() =>
+  window.EnterraEdit.getInstance(document.getElementById('bu')).getHTML());
+const buSet = async (html, pos) => {
+  await bup.evaluate((args) => {
+    const ed = window.EnterraEdit.getInstance(document.getElementById('bu'));
+    ed.setHTML(args.html);
+    ed.view.focus();
+    ed.view.dispatch(ed.view.state.tr.setSelection(
+      ed.view.state.selection.constructor.create(ed.view.state.doc, args.pos, args.pos)));
+  }, { html, pos });
+  await new Promise((r) => setTimeout(r, 150));
+};
+const buClick = (title) => bup.evaluate((t) => {
+  document.querySelector(`.ee-btn[title="${t}"]`)
+    .dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+}, title);
+
+// Quote. setBlockType cannot do this: a blockquote holds blocks, so a
+// paragraph does not fit inside one and the command declined. wrapIn places it
+// inside instead, and lift takes it back out, so the button toggles.
+await buSet('<p>quote me</p>', 5);
+await buClick('Quote');
+await new Promise((r) => setTimeout(r, 250));
+const quoted = await buHtml2();
+check('Quote wraps the paragraph in a blockquote',
+  quoted === '<blockquote><p>quote me</p></blockquote>', quoted);
+
+await buClick('Quote');
+await new Promise((r) => setTimeout(r, 250));
+const unquoted = await buHtml2();
+check('and clicking it again lifts back out',
+  unquoted === '<p>quote me</p>', unquoted);
+
+// Unlink. It read $from.marks(), which is empty at a mark boundary, so a caret
+// at either edge of a link found nothing to remove.
+await buSet('<p><a href="https://example.com">linked</a> tail</p>', 1);
+console.log('  (caret at the very start of the link)');
+await buClick('Remove link');
+await new Promise((r) => setTimeout(r, 250));
+const atStart = await buHtml2();
+check('Unlink removes the link with the caret at its start',
+  atStart === '<p>linked tail</p>', atStart);
+
+await buSet('<p><a href="https://example.com">linked</a> tail</p>', 4);
+await buClick('Remove link');
+await new Promise((r) => setTimeout(r, 250));
+const inside = await buHtml2();
+check('and with the caret inside it',
+  inside === '<p>linked tail</p>', inside);
+
+// With nothing linked it must do nothing quietly rather than throw.
+await buSet('<p>plain text</p>', 3);
+await buClick('Remove link');
+await new Promise((r) => setTimeout(r, 250));
+const nothing = await buHtml2();
+check('Unlink on unlinked text is a quiet no-op',
+  nothing === '<p>plain text</p>', nothing);
+
+await bup.close();
+fs.unlinkSync(buHtml);
+
 /* ---------- 13c. theming ---------- */
 
 const themeInfo = await page.evaluate(() => {

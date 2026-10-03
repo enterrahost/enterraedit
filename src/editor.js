@@ -23,7 +23,9 @@ import {
   exitCode,
   splitBlock,
   baseKeymap,
-  liftEmptyBlock
+  liftEmptyBlock,
+  wrapIn,
+  lift
 } from 'prosemirror-commands';
 import {
   wrapInList,
@@ -233,8 +235,25 @@ function toolbarFor(lang) {
     {
       key: 'blockquote',
       icon: ICONS.blockquote,
-      run: setBlockType(s.nodes.blockquote),
-      isActive: (state) => state.selection.$from.parent.type === s.nodes.blockquote
+      // A blockquote holds blocks, so setBlockType cannot turn a paragraph into
+      // one: the content does not fit. wrapIn places the paragraph inside a new
+      // blockquote, and lift takes it back out, so the button toggles.
+      run: (state, dispatch, view) => {
+        const inQuote = (() => {
+          for (let d = state.selection.$from.depth; d > 0; d--) {
+            if (state.selection.$from.node(d).type === s.nodes.blockquote) return true;
+          }
+          return false;
+        })();
+        const cmd = inQuote ? lift : wrapIn(s.nodes.blockquote);
+        return cmd(state, dispatch, view);
+      },
+      isActive: (state) => {
+        for (let d = state.selection.$from.depth; d > 0; d--) {
+          if (state.selection.$from.node(d).type === s.nodes.blockquote) return true;
+        }
+        return false;
+      }
     },
     {
       key: 'codeBlock',
@@ -247,9 +266,37 @@ function toolbarFor(lang) {
     {
       key: 'unlink',
       icon: ICONS.unlink,
+      // removeMark across the selection is what actually removes a link.
+      //
+      // This read $from.marks() before, which is empty at a mark boundary, so
+      // a caret at the start or end of a link reported nothing to remove and
+      // the command returned false without doing anything. The same trap the
+      // link dialog hit: probing a resolved position is not the same as asking
+      // what the selection covers, and the common case for unlink is a caret
+      // inside or beside the link rather than a full selection of it.
       run: (state, dispatch) => {
-        if (!s.marks.link.isInSet(state.selection.$from.marks())) return false;
-        if (dispatch) dispatch(state.tr.removeStoredMark(s.marks.link).addStoredMark(null));
+        const { from, to, empty, $from } = state.selection;
+
+        // With a caret, remove the link it sits in or touches, which is what
+        // someone means by clicking Unlink there. The whole block is the range,
+        // because a caret at the edge of a link carries none of its own marks
+        // and probing the position alone would find nothing to remove.
+        const start = empty ? $from.start() : from;
+        const end = empty ? $from.end() : to;
+
+        let found = false;
+        state.doc.nodesBetween(start, end, (node) => {
+          if (!found && node.isText && s.marks.link.isInSet(node.marks)) found = true;
+        });
+        // Nothing linked anywhere in range: clear a stored mark if one is set
+        // and otherwise report that there was nothing to do.
+        if (!found) {
+          if (dispatch) dispatch(state.tr.removeStoredMark(s.marks.link));
+          return false;
+        }
+        if (dispatch) {
+          dispatch(state.tr.removeMark(start, end, s.marks.link).removeStoredMark(s.marks.link));
+        }
         return true;
       }
     },
